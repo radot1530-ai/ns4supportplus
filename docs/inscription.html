@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>Enskripsyon - NS4 Support+</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f6fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+    .auth-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(36,67,154,0.1); width: 100%; max-width: 400px; }
+    h2 { color: #24439a; text-align: center; margin-bottom: 25px; }
+    .input-group { margin-bottom: 15px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 5px; }
+    input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; box-sizing: border-box; transition: 0.3s; }
+    input:focus { border-color: #24439a; outline: none; }
+    input:disabled { background: #f0f0f0; }
+    .error-msg { color: #e74c3c; font-size: 12px; margin-top: 5px; display: none; }
+    .btn-submit { width: 100%; padding: 14px; background: #24439a; color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; transition: 0.3s; font-family: inherit; }
+    .btn-submit:disabled { background: #95a5a6; cursor: not-allowed; }
+    .btn-google { width: 100%; padding: 14px; background: white; color: #333; border: 1px solid #ddd; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; font-family: inherit; }
+    .btn-google:hover { background: #f9f9f9; }
+    .btn-google:disabled { opacity: .5; cursor: not-allowed; }
+    .divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: #aaa; font-size: 12px; }
+    .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #ddd; }
+    .divider:not(:empty)::before { margin-right: .25em; }
+    .divider:not(:empty)::after { margin-left: .25em; }
+    .password-reqs { font-size: 11px; color: #7f8c8d; margin-top: 5px; }
+    .auth-link { text-align: center; margin-top: 15px; font-size: 14px; color: #555; }
+    .auth-link a { color: #24439a; text-decoration: none; font-weight: 700; }
+    .auth-link a.disabled { color: #95a5a6; cursor: not-allowed; }
+
+    /* Bannyè offline */
+    #offline-banner { display: none; background: #fdecea; color: #b3261e; border: 1px solid #f5c2be; border-radius: 12px; padding: 12px 14px; font-size: 13px; font-weight: 600; line-height: 1.4; margin-bottom: 18px; }
+    #offline-banner.shake { animation: shake .35s; }
+    @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    @media (prefers-reduced-motion: reduce) { #offline-banner.shake { animation: none; } }
+  </style>
+</head>
+<body>
+
+<div class="auth-card">
+  <h2>Kreye Kont Ou</h2>
+
+  <div id="offline-banner" role="alert"></div>
+
+  <form id="registerForm" novalidate>
+    <div class="input-group">
+      <label for="pseudo">Pseudo (Non itilizatè)</label>
+      <input type="text" id="pseudo" required maxlength="20" autocomplete="username" autocapitalize="none" placeholder="eg: Jean123">
+      <div id="pseudo-error" class="error-msg">Pseudo a dwe gen ant 3 ak 20 karaktè (lèt, chif ak _ sèlman).</div>
+    </div>
+    <div class="input-group">
+      <label for="email">Imèl</label>
+      <input type="email" id="email" required autocomplete="email" placeholder="eksanp@gmail.com">
+    </div>
+    <div class="input-group">
+      <label for="password">Modpas</label>
+      <input type="password" id="password" required autocomplete="new-password">
+      <div class="password-reqs">Modpas la dwe gen omwen 6 karaktè.</div>
+      <div id="pass-error" class="error-msg">Modpas la twò kout (gen omwen 6 karaktè).</div>
+    </div>
+    <div class="input-group">
+      <label for="confirm_password">Konfime Modpas</label>
+      <input type="password" id="confirm_password" required autocomplete="new-password">
+      <div id="match-error" class="error-msg">Modpas yo pa menm.</div>
+    </div>
+    <button type="submit" class="btn-submit" id="submitBtn">Enskri Koulye a</button>
+  </form>
+
+  <div class="divider">OSWA</div>
+
+  <button class="btn-google" id="googleBtn" type="button">
+    <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+    </svg>
+    Kontinye ak Google
+  </button>
+
+  <div class="auth-link">
+    Ou gen yon kont deja? <a href="login.html" id="loginLink">Konekte la</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ── Sesyon lokal: si moun nan konekte deja, li pa bezwen paj sa a (mache offline tou)
+  try {
+    var saved = JSON.parse(localStorage.getItem("ns4_user"));
+    if (saved && typeof saved.uid === "string" && saved.uid.length >= 6) {
+      window.location.replace("home.html");
+      return;
+    }
+  } catch (e) {}
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDxN2jYclFAeSh9tMvkoeZCTsFvWNQYOzA",
+    authDomain: "ns4supportplus.firebaseapp.com",
+    projectId: "ns4supportplus",
+    storageBucket: "ns4supportplus.firebasestorage.app",
+    messagingSenderId: "1072291248908",
+    appId: "1:1072291248908:web:711d01129b833847c5a729",
+    measurementId: "G-DEYNQ8GQ9B"
+  };
+
+  // ── Firebase ka pa chaje si pa gen entènèt → pa kite paj la plante
+  const hasFirebase = typeof firebase !== "undefined";
+  let auth = null, db = null;
+  if (hasFirebase) {
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.database();
+  }
+
+  const form = document.getElementById("registerForm");
+  const btn = document.getElementById("submitBtn");
+  const googleBtn = document.getElementById("googleBtn");
+  const loginLink = document.getElementById("loginLink");
+  const banner = document.getElementById("offline-banner");
+  const fields = form.querySelectorAll("input");
+
+  const MSG_OFFLINE = "📡 Ou pa gen entènèt. Ou bezwen entènèt pou kreye yon kont. Konekte sou entènèt epi eseye ankò.";
+  const MSG_NO_SERVICE = "⚠️ Sèvis la pa disponib pou kounye a. Verifye koneksyon ou epi rechaje paj la.";
+
+  let busy = false;
+
+  // ── Estati rezo
+  function isOnline() { return hasFirebase && navigator.onLine !== false; }
+
+  function refreshUI() {
+    const online = isOnline();
+    banner.style.display = online ? "none" : "block";
+    if (!online) banner.textContent = hasFirebase ? MSG_OFFLINE : MSG_NO_SERVICE;
+    btn.disabled = busy || !online;
+    googleBtn.disabled = busy || !online;
+    fields.forEach(i => { i.disabled = busy || !online; });
+    loginLink.classList.toggle("disabled", !online);
+    loginLink.setAttribute("aria-disabled", String(!online));
+  }
+
+  function warnOffline() {
+    refreshUI();
+    banner.classList.remove("shake");
+    void banner.offsetWidth;
+    banner.classList.add("shake");
+    banner.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  window.addEventListener("offline", refreshUI);
+  window.addEventListener("online", () => {
+    // Si Firebase pa t chaje pandan offline, rechaje paj la pou l chaje kounye a
+    if (!hasFirebase) { window.location.reload(); return; }
+    refreshUI();
+  });
+
+  // Pa kite moun nan ale sou lòt paj (login.html) si li offline
+  loginLink.addEventListener("click", (e) => {
+    if (!isOnline()) { e.preventDefault(); warnOffline(); }
+  });
+
+  // ── ID aparèy (pi solid pase Math.random)
+  function makeDeviceId() {
+    try {
+      const a = new Uint8Array(12);
+      crypto.getRandomValues(a);
+      return "dev_" + Array.from(a, b => b.toString(16).padStart(2, "0")).join("");
+    } catch (e) {
+      return "dev_" + Math.random().toString(36).slice(2, 11) + Date.now();
+    }
+  }
+  let deviceId = null;
+  try { deviceId = localStorage.getItem("device_id"); } catch (e) {}
+  if (!deviceId) {
+    deviceId = makeDeviceId();
+    try { localStorage.setItem("device_id", deviceId); } catch (e) {}
+  }
+
+  // ── Fonksyon itil
+  const PSEUDO_RE = /^[A-Za-z0-9_]{3,20}$/;
+
+  function cleanPseudo(name) {
+    let p = (name || "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^A-Za-z0-9_]/g, "")
+      .slice(0, 15);
+    if (p.length < 3) p = "User" + Math.floor(1000 + Math.random() * 9000);
+    return p;
+  }
+
+  function friendlyError(error) {
+    switch (error && error.code) {
+      case "auth/email-already-in-use": return "Imèl sa a gen yon kont sou li deja.";
+      case "auth/invalid-email": return "Adrès imèl sa a pa valid.";
+      case "auth/weak-password": return "Modpas la twò fèb.";
+      case "auth/unauthorized-domain": return "Domèn sa a pa otorize nan Firebase Auth.";
+      case "auth/network-request-failed": return "Pa gen entènèt oswa koneksyon an twò fèb. Eseye ankò.";
+      case "auth/too-many-requests": return "Twòp tantativ. Tann yon ti moman epi eseye ankò.";
+      case "PERMISSION_DENIED": return "Aksè refize. Kontakte sipò a.";
+      default: return (error && error.message) || "Yon erè rive. Eseye ankò.";
+    }
+  }
+
+  function setBusy(v, label) {
+    busy = v;
+    btn.innerText = label || "Enskri Koulye a";
+    refreshUI();
+  }
+
+  // ── Enskripsyon imèl / modpas
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    if (!isOnline()) { warnOffline(); return; }
+
+    const pseudo = document.getElementById("pseudo").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const pass = document.getElementById("password").value;
+    const confirm = document.getElementById("confirm_password").value;
+
+    document.getElementById("pseudo-error").style.display = "none";
+    document.getElementById("pass-error").style.display = "none";
+    document.getElementById("match-error").style.display = "none";
+
+    if (!PSEUDO_RE.test(pseudo)) {
+      document.getElementById("pseudo-error").style.display = "block";
+      return;
+    }
+    if (!email) { alert("Antre imèl ou."); return; }
+    if (pass.length < 6) {
+      document.getElementById("pass-error").style.display = "block";
+      return;
+    }
+    if (pass !== confirm) {
+      document.getElementById("match-error").style.display = "block";
+      return;
+    }
+
+    setBusy(true, "Ap trete...");
+
+    let user = null;
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      user = cred.user;
+      await registerUserInDB(user, pseudo);
+    } catch (error) {
+      // Si kont Auth la kreye men done yo pa ekri, anile kont la pou moun nan ka eseye ankò
+      if (user) {
+        try { await user.delete(); } catch (_) { try { await auth.signOut(); } catch (__) {} }
+      }
+      alert("Erè: " + friendlyError(error));
+      setBusy(false);
+    }
+  });
+
+  // ── Google
+  googleBtn.addEventListener("click", async () => {
+    if (busy) return;
+    if (!isOnline()) { warnOffline(); return; }
+    setBusy(true, "Enskri Koulye a");
+
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+
+      try {
+        const snap = await db.ref("users/" + user.uid).once("value");
+        if (!snap.exists()) {
+          await registerUserInDB(user, cleanPseudo(user.displayName));
+        } else {
+          await finalizeLogin(user.uid, snap.val().pseudo);
+        }
+      } catch (dbErr) {
+        try { await auth.signOut(); } catch (_) {}
+        throw dbErr;
+      }
+    } catch (error) {
+      if (error && (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request")) {
+        // moun nan fèmen fenèt la: pa gen alèt
+      } else {
+        alert("Erè Google: " + friendlyError(error));
+      }
+      setBusy(false);
+    }
+  });
+
+  // ── Done
+  async function registerUserInDB(user, pseudo) {
+    const userData = {
+      uid: user.uid, pseudo: pseudo, email: user.email, coins: 50, xp: 0,
+      streak: 1, status: "FREE", isConnected: true, photoURL: user.photoURL || null,
+      createdAt: firebase.database.ServerValue.TIMESTAMP
+    };
+    await db.ref("users/" + user.uid).set(userData);
+
+    await db.ref("leaderboard/" + user.uid).set({
+      pseudo: pseudo, xp: 0, level: 1, streak: 1, photoURL: user.photoURL || null
+    });
+
+    await finalizeLogin(user.uid, pseudo);
+  }
+
+  async function finalizeLogin(uid, pseudo) {
+    await db.ref("users/" + uid + "/active_sessions/" + deviceId).set({
+      loginAt: firebase.database.ServerValue.TIMESTAMP, platform: navigator.userAgent
+    });
+    try {
+      localStorage.setItem("ns4_user", JSON.stringify({ uid: uid, pseudo: pseudo }));
+    } catch (e) {
+      throw new Error("Aparèy la pa kite sove sesyon an (stokaj bloke).");
+    }
+    window.location.replace("home.html");
+  }
+
+  refreshUI();
+})();
+</script>
+</body>
+</html>
