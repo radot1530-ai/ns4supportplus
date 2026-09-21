@@ -1,44 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ns4.quiz">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
-    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34"/>
-
-    <application 
-        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-        android:debuggable="false"
+    <application
         android:label="NS4 Support Plus"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:usesCleartextTraffic="true"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round">
+        android:icon="@android:drawable/sym_def_app_icon"
+        android:roundIcon="@android:drawable/sym_def_app_icon">
 
-        <!-- 🔵 AJOUTE ÇA : App ID AdMob -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3844455306510823~9161481165"/>
 
-        <activity android:exported="true" android:name="com.ns4.quiz.MainActivity">
+        <activity
+            android:name="com.ns4.quiz.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
-        <provider 
-            android:authorities="com.ns4.quiz.androidx-startup"
-            android:exported="false"
-            android:name="androidx.startup.InitializationProvider">
-            <meta-data 
-                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-                android:value="androidx.startup"/>
-            <meta-data 
-                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-                android:value="androidx.startup"/>
-        </provider>
 
     </application>
 
