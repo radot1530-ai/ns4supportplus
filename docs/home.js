@@ -58,8 +58,7 @@ function safeSet(key, value) {
 function escapeHtml(str) {
     return String(str ?? "").replace(/[&<>"']/g, (c) => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-    }[c]));
-}
+    }[c]));}
 
 // Fè yon URL sekirize pou background-image (bloke guillemet, parantèz, espas)
 function cssUrl(u) {
@@ -108,7 +107,7 @@ db.ref(".info/connected").on("value", (snap) => {
 auth.onAuthStateChanged((user) => {
     if (!user) {
         localStorage.removeItem("ns4_user");
-        window.location.href = "intro.html";
+        window.location.href = "index.html";
         return;
     }
     // Lòt kont sou menm telefòn: pa kenbe done kont anvan an
@@ -171,7 +170,7 @@ function logout() {
     }
     auth.signOut().then(() => {
         localStorage.removeItem("ns4_user");
-        window.location.href = "intro.html";
+        window.location.href = "index.html";
     }).catch((err) => console.error("Erè:", err));
 }
 
@@ -478,9 +477,7 @@ function resetInterval() {
     if (slideCount > 1) slideInterval = setInterval(nextSlide, 4000);
 }
 
-/*=========================================================
-  7. AFICHAJ DONE (null-safe: pa janm plante si yon eleman pa egziste)
-=========================================================*/
+
 function updateDOMWithUserData(data) {
     if (!data) return;
 
@@ -519,15 +516,22 @@ function updateDOMWithUserData(data) {
 // Gade piblisite pou fè pyès
 let watchingAd = false;
 function watchAdForCoins() {
-    if (watchingAd) return;
-    watchingAd = true;
     showToast("Piblisite ap chaje...", "⏳");
-    setTimeout(() => {
-        // Isit la ou ta mete lojik Google AdMob Rewarded Video a.
-        if (typeof StatsAPI !== "undefined") StatsAPI.addReward(5, 10, "ads");
-        showToast("Mèsi dèske w te gade piblisite a!", "📺");
-        watchingAd = false;
-    }, 3000);
+    if (window.AndroidAds) {
+        window.AndroidAds.showRewardedAd();
+    } else {
+        showToast("Pa disponib sou navigatè, sèlman sou app la.", "⚠️");
+    }
+}
+
+// 🔵 Appelée par MainActivity.java quand la récompense est gagnée
+function onAdRewardEarned() {
+    StatsAPI.addReward(5, 10, "ads");
+    showToast("Mèsi dèske w te gade piblisite a!", "📺");
+}
+
+function onAdNotReady() {
+    showToast("Piblisite a poko pare, eseye ankò nan kèk segonn.", "⚠️");
 }
 
 /*=========================================================
