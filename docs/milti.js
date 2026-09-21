@@ -31,13 +31,13 @@ const LOSER_XP = 5;
 let localUser = JSON.parse(localStorage.getItem("ns4_user"));
 
 if (!localUser || !localUser.uid) {
-    window.location.href = "intro.html";
+    window.location.href = "index.html";
 }
 
 auth.onAuthStateChanged((user) => {
     if (!user) {
         localStorage.removeItem("ns4_user");
-        window.location.href = "intro.html";
+        window.location.href = "index.html";
     }
 });
 
@@ -47,7 +47,7 @@ function logout() {
     }
     auth.signOut().then(() => {
         localStorage.removeItem("ns4_user");
-        window.location.href = "intro.html";
+        window.location.href = "index.html";
     }).catch(err => console.error("Erè:", err));
 }
 
