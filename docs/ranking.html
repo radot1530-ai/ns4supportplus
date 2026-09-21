@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#24439a">
+  <title>Klasman - NS4 Support+</title>
+
+  <!-- Google Fonts (menm jan ak home.html) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+  <style>
+    :root {
+      --primary: #24439a;
+      --primary-dark: #1d3783;
+      --primary-gradient: linear-gradient(135deg, #24439a 0%, #1d3783 100%);
+      --page-bg: #f4f6fa;
+      --white: #ffffff;
+      --text: #1a1a1a;
+      --muted: #666666;
+      --placeholder: #e9ecf3;
+      --green: #12d51c;
+      --gold: #ffc107;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 15px rgba(36, 67, 154, 0.1);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      width: 100%;
+      min-height: 100vh;
+      background: var(--page-bg);
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      overflow-x: hidden;
+      padding-bottom: 90px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* =========================================================
+       HEADER (menm chapo ak home.html)
+    ========================================================= */
+    .app-header {
+      width: 100%;
+      background: var(--primary-gradient);
+      color: var(--white);
+      padding: 16px 20px 44px;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
+      box-shadow: 0 4px 20px rgba(36, 67, 154, 0.2);
+      position: relative;
+    }
+    .app-title-row { display: flex; align-items: center; justify-content: space-between; }
+    .app-title { font-family: "Baloo 2", sans-serif; font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; gap: 15px; }
+    .header-button { border: 0; background: rgba(255, 255, 255, 0.15); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); transition: background 0.2s; }
+    .header-button:active { background: rgba(255, 255, 255, 0.3); }
+    .hamburger-button { flex-direction: column; gap: 5px; border-radius: 12px; }
+    .hamburger-button span { width: 22px; height: 3px; background: white; border-radius: 3px; }
+    .header-sub { margin-top: 10px; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 500; }
+
+    /* =========================================================
+       CARTE "MA POZISYON" (menm mekanism chevouchman ak
+       .stats-container nan home.html)
+    ========================================================= */
+    .my-rank-wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; transform: translateY(-26px); }
+    .my-rank-inner {
+      background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+      padding: 16px 18px; display: flex; align-items: center; gap: 14px; min-height: 46px;
+    }
+    .my-rank-badge {
+      width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 15px;
+      background: var(--page-bg); color: var(--primary); flex-shrink: 0;
+    }
+    .my-rank-badge.top1 { background: linear-gradient(135deg,#ffe08a,#ffb300); color: #7a4b00; font-size: 22px; }
+    .my-rank-badge.top2 { background: linear-gradient(135deg,#eef1f5,#b0b8c4); color: #3c4550; font-size: 22px; }
+    .my-rank-badge.top3 { background: linear-gradient(135deg,#f3c19c,#d97a3f); color: #5c2e0f; font-size: 22px; }
+    .my-rank-avatar { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; background: var(--page-bg); flex-shrink: 0; border: 2px solid var(--placeholder); }
+    .my-rank-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .my-rank-info { flex: 1; min-width: 0; }
+    .my-rank-label { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+    .my-rank-name { font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .my-rank-xp { text-align: right; flex-shrink: 0; }
+    .my-rank-xp .val { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 20px; color: var(--primary); line-height: 1; }
+    .my-rank-xp .lbl { font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+
+    /* =========================================================
+       CONTENI
+    ========================================================= */
+    .rank-content { max-width: 900px; margin: 6px auto 0; padding: 0 20px; }
+    .section-title { font-family: "Baloo 2", sans-serif; font-size: 18px; font-weight: 700; margin: 20px 2px 12px; display: flex; align-items: center; gap: 8px; }
+
+    .board-list { display: flex; flex-direction: column; gap: 8px; }
+    .board-row { background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+    .board-row.me { box-shadow: var(--shadow-sm), inset 0 0 0 2px var(--primary); background: #eef2fb; }
+    .board-row.rank-1 { border-left: 4px solid #ffc107; background: linear-gradient(to right, #fffaf0, #ffffff); }
+    .board-row.rank-2 { border-left: 4px solid #b0b8c4; background: linear-gradient(to right, #f5f6f8, #ffffff); }
+    .board-row.rank-3 { border-left: 4px solid #d99458; background: linear-gradient(to right, #fdf4ee, #ffffff); }
+    .board-rank { width: 30px; text-align: center; font-family: "Baloo 2", sans-serif; font-weight: 800; color: var(--muted); font-size: 15px; flex-shrink: 0; }
+    .board-rank.medal { font-size: 20px; }
+    .board-avatar { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; background: var(--page-bg); flex-shrink: 0; }
+    .board-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .board-name { flex: 1; min-width: 0; font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+    .me-badge { background: var(--primary); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; flex-shrink: 0; }
+    .board-xp { font-family: "Baloo 2", sans-serif; font-weight: 700; color: var(--primary); font-size: 14px; white-space: nowrap; flex-shrink: 0; }
+
+    .state-msg { text-align: center; padding: 26px 20px; color: var(--muted); font-size: 14px; background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+    .spinner { margin: 6px auto; width: 30px; height: 30px; border: 4px solid var(--placeholder); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* =========================================================
+       ESTATISTIK MWEN
+    ========================================================= */
+    .my-level-card { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 16px 18px; margin-bottom: 12px; }
+    .xp-bar-bg { height: 8px; background: var(--placeholder); border-radius: 10px; overflow: hidden; margin-top: 8px; }
+    .xp-bar-fill { height: 100%; background: linear-gradient(90deg, #12d51c, #00e676); width: 0%; border-radius: 10px; transition: width 0.8s ease-in-out; }
+    .xp-text { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 6px; font-weight: 600; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .stat-box { background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 14px; text-align: center; }
+    .stat-box .v { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 20px; color: var(--text); }
+    .stat-box .l { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+
+    /* =========================================================
+       TOAST
+    ========================================================= */
+    .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #333; color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10000; display: flex; align-items: center; gap: 10px; }
+    .toast-container.show { transform: translateX(-50%) translateY(0); }
+
+    /* =========================================================
+       MENU DRAWER (menm jan ak home.html)
+    ========================================================= */
+    .main-menu { position: fixed; top: 0; right: -320px; width: 280px; height: 100vh; background: var(--white); z-index: 10001; box-shadow: -6px 0 20px rgba(0,0,0,0.1); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
+    .main-menu.open { right: 0; }
+    .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: none; backdrop-filter: blur(2px); }
+    .menu-overlay.show { display: block; }
+    .menu-header { background: var(--primary-gradient); color: white; padding: 40px 20px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .menu-header strong { font-family: "Baloo 2", sans-serif; font-size: 22px; }
+    .close-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .menu-links { padding: 10px 0; overflow-y: auto; }
+    .menu-link { padding: 16px 24px; font-size: 16px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--placeholder); transition: background 0.2s; cursor: pointer; }
+    .menu-link:active { background: var(--page-bg); }
+    .menu-link.logout-btn { color: #ff4757; font-weight: 700; }
+
+    /* =========================================================
+       BOTTOM NAVIGATION (menm jan ak home.html)
+    ========================================================= */
+    .bottom-navigation { position: fixed; left: 0; bottom: 0; width: 100%; height: 75px; background: var(--white); border-top-left-radius: 20px; border-top-right-radius: 20px; display: grid; grid-template-columns: repeat(4, 1fr); box-shadow: 0 -4px 20px rgba(0,0,0,0.06); z-index: 1000; padding: 5px 10px 15px; }
+    .bottom-item { border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--muted); cursor: pointer; transition: 0.3s; position: relative; }
+    .bottom-icon { font-size: 22px; transition: transform 0.2s; }
+    .bottom-item span { font-size: 12px; font-weight: 600; }
+    .bottom-item.active { color: var(--primary); }
+    .bottom-item.active .bottom-icon { transform: translateY(-3px); }
+    .bottom-item.active::after { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 30px; height: 3px; background: var(--primary); border-radius: 0 0 4px 4px; }
+  </style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast" class="toast-container">
+  <span id="toast-icon">ℹ️</span>
+  <span id="toast-message">Mesaj la ap parèt isit la.</span>
+</div>
+
+<!-- MENU OVERLAY -->
+<div id="menu-overlay" class="menu-overlay" onclick="toggleMainMenu()"></div>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="app-title-row">
+    <div class="app-title">🏆 Klasman</div>
+    <div class="header-actions">
+      <button class="header-button hamburger-button" onclick="toggleMainMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="header-sub">Pi bon elèv NS4 yo, dapre XP</div>
+</header>
+
+<!-- MA POZISYON -->
+<div class="my-rank-wrap">
+  <div class="my-rank-inner" id="my-rank-inner">
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="rank-content">
+
+  <div class="section-title">📋 Top 50</div>
+  <div class="board-list" id="board-list">
+    <div class="state-msg">Ap chaje klasman an...</div>
+  </div>
+
+  <div class="section-title">📊 Estatistik Mwen</div>
+  <div class="my-level-card">
+    <div class="xp-text">
+      <span id="my-level-text">Nivo 1</span>
+      <span id="my-xp-text">0 / 100 XP</span>
+    </div>
+    <div class="xp-bar-bg">
+      <div class="xp-bar-fill" id="my-xp-fill" style="width: 0%;"></div>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-box"><div class="v" id="stat-coins">0</div><div class="l">Pyès</div></div>
+    <div class="stat-box"><div class="v" id="stat-streak">0</div><div class="l">Jou afile</div></div>
+    <div class="stat-box"><div class="v" id="stat-quizxp">0</div><div class="l">XP nan Quiz</div></div>
+    <div class="stat-box"><div class="v" id="stat-since">-</div><div class="l">Manm depi</div></div>
+  </div>
+
+</main>
+
+<!-- SIDE MENU -->
+<div class="main-menu" id="main-menu">
+  <div class="menu-header">
+    <strong>NS4 Support+</strong>
+    <button class="close-btn" onclick="toggleMainMenu()" type="button">×</button>
+  </div>
+  <div class="menu-links">
+    <div class="menu-link" onclick="window.location.href = 'home.html'">🏠 Akèy</div>
+    <div class="menu-link" onclick="window.location.href = 'quiz.html'">📚 Matyè & Quiz</div>
+    <div class="menu-link" onclick="window.location.href = 'defi.html'">🎯 Defi</div>
+    <div class="menu-link" onclick="window.location.href = 'paramèt.html'">⚙️ Paramèt</div>
+    <div class="menu-link logout-btn" onclick="logout()">🚪 Dekonekte</div>
+  </div>
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom-navigation">
+  <button class="bottom-item" onclick="window.location.href = 'home.html'" type="button">
+    <div class="bottom-icon">🏠</div>
+    <span>Akèy</span>
+  </button>
+  <button class="bottom-item active" type="button">
+    <div class="bottom-icon">🏆</div>
+    <span>Klasman</span>
+  </button>
+  <button class="bottom-item" onclick="window.location.href = 'milti.html'" type="button">
+    <div class="bottom-icon">🎮</div>
+    <span>Militjwe</span>
+  </button>
+  <button class="bottom-item" onclick="toggleMainMenu()" type="button">
+    <div class="bottom-icon">☰</div>
+    <span>Menu</span>
+  </button>
+</nav>
+
+<!-- JS -->
+<script src="stats.js"></script>
+<script src="ranking.js"></script>
+</body>
+</html>
