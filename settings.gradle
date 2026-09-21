@@ -5,6 +5,12 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-
-rootProject.name = "NS4-Quiz"
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "NS4SupportPlus"
 include ':app'
