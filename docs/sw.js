@@ -1,26 +1,28 @@
 const DB_NAME = 'ns4-offline-db';
 const DB_VERSION = 1;
 const STORE_NAME = 'files';
-const MANIFEST_VERSION = 'v1'; // 🔵 monte sa a lè w ajoute/retire fichye nan lis la
+const MANIFEST_VERSION = 'v2'; // 🔵 monte chak fwa lis ALL_FILES chanje
 
-// ⚠️ Mete non EGZAK tout fichye ki nan /docs ou a
 const ALL_FILES = [
   '/', '/index.html',
-  '/home.html', '/home.js',
-  '/login.html',
-  '/inscription.html',
-  '/pwofil.html', '/pwofil.js',
-  '/ranking.html', '/ranking.js',
-  '/quiz.html',
-  '/milti.html', '/milti.js',
   '/defi.html', '/defi.js',
   '/exam.html',
   '/fòmil.html',
-  '/vocab.html',
-  '/paramèt.html', '/paramet.js',
-  '/stats.js',
+  '/home.html', '/home.js',
+  '/inscription.html',
+  '/login.html',
+  '/milti.html', '/milti.js',
   '/notifications.js',
-  '/tyle.css'
+  '/ns4-content.js',
+  '/ns4-correction.js',
+  '/ns4-math.js',
+  '/paramet.js', '/paramèt.html',
+  '/pwofil.html', '/pwofil.js',
+  '/quiz.html', '/quiz.js',
+  '/ranking.html', '/ranking.js',
+  '/stats.js',
+  '/tyle.css',
+  '/vocab.html'
 ];
 
 /* ---------- IndexedDB helpers ---------- */
@@ -30,7 +32,7 @@ function openDB() {
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME); // key = URL, value = { body, headers, manifestVersion }
+        db.createObjectStore(STORE_NAME);
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -79,17 +81,14 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  // Refresh an background chak fwa app la aktive (pa bloke demaraj la)
-  event.waitUntil(
-    self.clients.claim().then(() => downloadAllFiles())
-  );
+  event.waitUntil(self.clients.claim().then(() => downloadAllFiles()));
 });
 
 /* ---------- Sèvi paj yo: rezo an premye, IndexedDB an sekou ---------- */
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin) return; // kite Firebase/Fonts pase dirèk
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith((async () => {
     try {
