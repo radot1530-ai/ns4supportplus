@@ -1,7 +1,7 @@
 const DB_NAME = 'ns4-offline-db';
 const DB_VERSION = 1;
 const STORE_NAME = 'files';
-const MANIFEST_VERSION = 'v3';
+const MANIFEST_VERSION = 'v4';
 
 // 🔵 Kalkile otomatikman chemen baz la (egzanp "/radot1530-ai/")
 const BASE_PATH = new URL('.', self.location).pathname;
