@@ -221,5 +221,12 @@
     dbg('❌ IndexedDB PA sipòte');
   }
 </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function(err) {
+      console.log('SW echwe:', err);
+    });
+  }
+</script>
 </body>
 </html>
