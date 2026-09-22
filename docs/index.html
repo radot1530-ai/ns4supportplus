@@ -196,5 +196,32 @@
       .catch((err) => console.log('SW echwe:', err));
   }
 </script>
+<div id="debug-panel" style="position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font-size:10px;padding:8px;max-height:150px;overflow-y:auto;z-index:99999;font-family:monospace;"></div>
+<script>
+  function dbg(msg) {
+    const p = document.getElementById('debug-panel');
+    if (p) p.innerHTML += msg + '<br>';
+    console.log(msg);
+  }
+
+  dbg('Android WebView User-Agent: ' + navigator.userAgent);
+
+  if ('serviceWorker' in navigator) {
+    dbg('✅ Service Worker sipòte');
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      dbg('✅ SW enskri: ' + reg.scope);
+    }).catch((err) => {
+      dbg('❌ SW echwe: ' + err.message);
+    });
+  } else {
+    dbg('❌ Service Worker PA sipòte sou WebView sa a (Android twò ansyen?)');
+  }
+
+  if ('indexedDB' in window) {
+    dbg('✅ IndexedDB sipòte');
+  } else {
+    dbg('❌ IndexedDB PA sipòte');
+  }
+</script>
 </body>
 </html>
