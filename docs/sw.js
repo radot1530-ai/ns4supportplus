@@ -24,6 +24,7 @@ const FILE_NAMES = [
   'quiz.html', 'quiz.js',
   'ranking.html', 'ranking.js',
   'stats.js',
+  'questions.js',
   'tyle.css',
   'vocab.html'
 ];
