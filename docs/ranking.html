@@ -261,5 +261,10 @@
 <!-- JS -->
 <script src="stats.js"></script>
 <script src="ranking.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(console.error);
+}
+</script>
 </body>
 </html>
