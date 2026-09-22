@@ -117,7 +117,7 @@ function toggleMainMenu() {
 auth.onAuthStateChanged((user) => {
     if (!user) {
         localStorage.removeItem("ns4_user");
-        window.location.href = "intro.html";
+        window.location.href = "index.html";
         return;
     }
     if (started) return;
@@ -135,7 +135,7 @@ function logout() {
     }
     auth.signOut().then(() => {
         localStorage.removeItem("ns4_user");
-        window.location.href = "intro.html";
+        window.location.href = "index.html";
     }).catch((err) => console.error("Erè:", err));
 }
 
