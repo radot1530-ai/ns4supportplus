@@ -1,7 +1,7 @@
 const DB_NAME = 'ns4-offline-db';
 const DB_VERSION = 1;
 const STORE_NAME = 'files';
-const MANIFEST_VERSION = 'v2'; // 🔵 monte chak fwa lis ALL_FILES chanje
+const MANIFEST_VERSION = 'v3'; // 🔵 monte chak fwa lis ALL_FILES chanje
 
 const ALL_FILES = [
   '/', '/index.html',
