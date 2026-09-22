@@ -189,11 +189,6 @@
       setTimeout(route, 1500);
     })();
   </script>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
 <div id="debug-panel" style="position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font-size:10px;padding:8px;max-height:150px;overflow-y:auto;z-index:99999;font-family:monospace;"></div>
 <script>
   function dbg(msg) {
@@ -202,31 +197,63 @@
     console.log(msg);
   }
 
-  dbg('Android WebView User-Agent: ' + navigator.userAgent);
+  dbg('URL paj la: ' + location.href);
 
   if ('serviceWorker' in navigator) {
     dbg('✅ Service Worker sipòte');
-    navigator.serviceWorker.register('/sw.js').then((reg) => {
-      dbg('✅ SW enskri: ' + reg.scope);
+
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      dbg('✅ Enskripsyon reyisi — scope: ' + reg.scope);
+      if (reg.installing) dbg('⏳ SW ap enstale...');
+      if (reg.waiting)    dbg('⏳ SW ap tann (waiting)...');
+      if (reg.active)     dbg('✅ SW aktif');
+
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          dbg('🔄 État SW: ' + newSW.state);
+        });
+      });
     }).catch((err) => {
-      dbg('❌ SW echwe: ' + err.message);
+      dbg('❌ Enskripsyon echwe: ' + err.message);
     });
+
+    // Èske paj sa a kounye a kontwole pa yon SW aktif?
+    if (navigator.serviceWorker.controller) {
+      dbg('✅ Paj KONTWOLE pa SW: ' + navigator.serviceWorker.controller.scriptURL);
+    } else {
+      dbg('⚠️ Paj PA kontwole (nòmal nan premye chaj — refrechi paj la yon dezyèm fwa)');
+    }
   } else {
-    dbg('❌ Service Worker PA sipòte sou WebView sa a (Android twò ansyen?)');
+    dbg('❌ Service Worker PA sipòte');
   }
 
   if ('indexedDB' in window) {
     dbg('✅ IndexedDB sipòte');
+
+    const req = indexedDB.open('ns4-offline-db', 1);
+    req.onsuccess = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('files')) {
+        dbg('⚠️ Store "files" pa egziste ankò');
+        return;
+      }
+      const store = db.transaction('files', 'readonly').objectStore('files');
+      store.count().onsuccess = (e) => {
+        dbg('📦 Kantite fichye sove offline: ' + e.target.result);
+      };
+    };
+    req.onerror = () => dbg('❌ Pa ka louvri IndexedDB: ' + req.error);
   } else {
     dbg('❌ IndexedDB PA sipòte');
   }
 </script>
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(function(err) {
-      console.log('SW echwe:', err);
-    });
-  }
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(reg => console.log('✅ SW enskri, scope:', reg.scope))
+    .catch(err => console.error('❌ SW echwe:', err));
+}
 </script>
 </body>
 </html>
