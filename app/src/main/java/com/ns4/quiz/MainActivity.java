@@ -137,3 +137,30 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 }
+
+// 🔵 Ajoute cette classe interne, et enregistre-la comme les autres ponts
+public class WidgetBridge {
+    @JavascriptInterface
+    public void saveNote(String category, String title, String text) {
+        SharedPreferences prefs = getSharedPreferences(NS4WidgetProvider.PREFS_NAME, MODE_PRIVATE);
+        prefs.edit()
+            .putString("note_" + category + "_title", title)
+            .putString("note_" + category + "_text", text)
+            .apply();
+        NS4WidgetProvider.refreshAll(MainActivity.this);
+    }
+
+    @JavascriptInterface
+    public void requestPinWidget() {
+        runOnUiThread(() -> {
+            AppWidgetManager manager = AppWidgetManager.getInstance(MainActivity.this);
+            if (android.os.Build.VERSION.SDK_INT >= 26 && manager.isRequestPinAppWidgetSupported()) {
+                ComponentName provider = new ComponentName(MainActivity.this, NS4WidgetProvider.class);
+                manager.requestPinAppWidget(provider, null, null);
+            } else {
+                webView.evaluateJavascript(
+                    "showToast('Kenbe dwèt sou ekran akèy la, chwazi Widgets, jwenn NS4 Support+')", null);
+            }
+        });
+    }
+}
