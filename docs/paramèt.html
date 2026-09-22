@@ -282,5 +282,28 @@
 </nav>
 
 <script src="paramet.js"></script>
+<div id="sw-status" style="display:none;font-size:14px;color:#666;">
+  ⏳ N ap prepare done pou mòd san entènèt... <span id="sw-count">0/0</span>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(console.error);
+
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    const { type, done, total } = e.data || {};
+    const box = document.getElementById('sw-status');
+    const cnt = document.getElementById('sw-count');
+    if (type === 'dl-start' || type === 'dl-progress') {
+      box.style.display = 'block';
+      cnt.textContent = `${done || 0}/${total}`;
+    }
+    if (type === 'dl-complete') {
+      box.textContent = '✅ Done yo pare pou mòd san entènèt.';
+      setTimeout(() => (box.style.display = 'none'), 3000);
+    }
+  });
+}
+</script>
 </body>
 </html>
