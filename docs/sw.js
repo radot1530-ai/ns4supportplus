@@ -1,10 +1,11 @@
-const CACHE_VERSION = 'ns4-v2';
-const CACHE_NAME = CACHE_VERSION;
+const DB_NAME = 'ns4-offline-db';
+const DB_VERSION = 1;
+const STORE_NAME = 'files';
+const MANIFEST_VERSION = 'v1'; // 🔵 monte sa a lè w ajoute/retire fichye nan lis la
 
-// ⚠️ Ajiste lis sa a pou l matche EGZAKTEMAN non fichye ki nan /docs ou a
-const URLS_TO_CACHE = [
-  '/',
-  '/index.html',
+// ⚠️ Mete non EGZAK tout fichye ki nan /docs ou a
+const ALL_FILES = [
+  '/', '/index.html',
   '/home.html', '/home.js',
   '/login.html',
   '/inscription.html',
@@ -19,51 +20,97 @@ const URLS_TO_CACHE = [
   '/paramèt.html', '/paramet.js',
   '/stats.js',
   '/notifications.js',
-  '/tyle.css',
-  '/offline.html'
+  '/tyle.css'
 ];
 
+/* ---------- IndexedDB helpers ---------- */
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME); // key = URL, value = { body, headers, manifestVersion }
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbPut(url, data) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).put(data, url);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function idbGet(url) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).get(url);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/* ---------- Telechaje TOUT fichye yo pwoaktivman ---------- */
+async function downloadAllFiles() {
+  await Promise.all(ALL_FILES.map(async (url) => {
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) return;
+      const body = await res.blob();
+      const contentType = res.headers.get('content-type') || '';
+      await idbPut(url, { body, contentType, manifestVersion: MANIFEST_VERSION });
+    } catch (e) {
+      console.warn('SW: pa t kapab telechaje', url, e);
+    }
+  }));
+}
+
+/* ---------- Cycle de vie ---------- */
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) =>
-      cache.addAll(URLS_TO_CACHE).catch((err) => console.warn('Cache pasyèl:', err))
-    )
-  );
-  self.skipWaiting();
+  event.waitUntil(downloadAllFiles().then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {
+  // Refresh an background chak fwa app la aktive (pa bloke demaraj la)
   event.waitUntil(
-    caches.keys().then((names) =>
-      Promise.all(names.map((n) => n !== CACHE_NAME && caches.delete(n)))
-    )
+    self.clients.claim().then(() => downloadAllFiles())
   );
-  self.clients.claim();
 });
 
+/* ---------- Sèvi paj yo: rezo an premye, IndexedDB an sekou ---------- */
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-
-  // Firebase, Google Fonts, elt. — pa entèsepte, kite rezo a jere yo dirèkteman
   const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin) return;
+  if (url.origin !== self.location.origin) return; // kite Firebase/Fonts pase dirèk
 
-  event.respondWith(
-    // Network-first: eseye rezo a pou toujou gen dènye vèsyon an lè online
-    fetch(event.request)
-      .then((res) => {
-        if (res && res.status === 200) {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return res;
-      })
-      .catch(() =>
-        // Rezo echwe → tonbe sou kach la
-        caches.match(event.request).then((cached) => {
-          if (cached) return cached;
-          if (event.request.mode === 'navigate') return caches.match('/offline.html');
-        })
-      )
-  );
+  event.respondWith((async () => {
+    try {
+      const res = await fetch(event.request);
+      if (res && res.ok) {
+        const clone = res.clone();
+        const body = await clone.blob();
+        const contentType = res.headers.get('content-type') || '';
+        idbPut(url.pathname, { body, contentType, manifestVersion: MANIFEST_VERSION });
+      }
+      return res;
+    } catch (e) {
+      const cached = await idbGet(url.pathname === '/' ? '/' : url.pathname);
+      if (cached) {
+        return new Response(cached.body, { headers: { 'Content-Type': cached.contentType } });
+      }
+      if (event.request.mode === 'navigate') {
+        const fallback = await idbGet('/index.html');
+        if (fallback) return new Response(fallback.body, { headers: { 'Content-Type': fallback.contentType } });
+      }
+      return new Response('Offline — done pa disponib.', { status: 503 });
+    }
+  })());
 });
