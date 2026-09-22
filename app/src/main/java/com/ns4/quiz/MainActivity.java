@@ -1,5 +1,6 @@
 package com.ns4.quiz;
 
+android.appwidget.AppWidgetManager; android.content.ComponentName; android.content.SharedPreferences;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
