@@ -403,5 +403,10 @@
 <script defer src="stats.js"></script>
 <script defer src="questions.js"></script>
 <script defer src="quiz.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(console.error);
+}
+</script>
 </body>
 </html>
