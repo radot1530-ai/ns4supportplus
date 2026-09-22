@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#24439a">
+<title>NS4 Support+ | Vokabilè & Nòt</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Firebase Web SDK v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<style>
+:root{
+  --primary:#24439a; --primary-dark:#1d3783;
+  --primary-gradient:linear-gradient(135deg,#24439a 0%,#1d3783 100%);
+  --page-bg:#f4f6fa; --white:#fff; --text:#1a1a1a; --muted:#666;
+  --placeholder:#e9ecf3; --green:#12d51c; --gold:#ffc107;
+  --shadow-sm:0 2px 8px rgba(0,0,0,.05); --shadow-md:0 4px 15px rgba(36,67,154,.1);
+  --radius-lg:20px; --radius-md:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Inter",sans-serif;background:var(--page-bg);color:var(--text);padding-bottom:40px;-webkit-tap-highlight-color:transparent;}
+
+/* HEADER */
+.app-header{background:var(--primary-gradient);color:#fff;padding:16px 18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom-left-radius:26px;border-bottom-right-radius:26px;box-shadow:0 4px 20px rgba(36,67,154,.2);position:sticky;top:0;z-index:50;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.back-btn{background:rgba(255,255,255,.18);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.header-title{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:20px;}
+.header-sub{font-size:11px;opacity:.85;font-weight:500;}
+.coin-pill{background:rgba(255,255,255,.18);color:#fff;padding:7px 12px;border-radius:20px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:5px;}
+
+/* INFO CARD & WIDGET */
+.info-card{background:#eef9f2;border-radius:16px;padding:14px;margin:16px;display:flex;gap:12px;align-items:flex-start;}
+.info-card .chk{background:var(--green);color:#fff;width:24px;height:24px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;}
+.info-card p{font-size:12.5px;line-height:1.5;color:#333;}
+
+.daily-widget-card{background:linear-gradient(135deg, #1d3783 0%, #24439a 100%);color:#fff;border-radius:20px;padding:18px;margin:16px;box-shadow:0 6px 18px rgba(36,67,154,0.25);position:relative;overflow:hidden;}
+.daily-widget-card::after{content:"💡";position:absolute;right:-10px;bottom:-10px;font-size:80px;opacity:0.12;pointer-events:none;}
+.widget-tag{background:rgba(255,255,255,0.2);color:#fff;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;display:inline-block;margin-bottom:8px;text-transform:uppercase;}
+.widget-title{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:16px;margin-bottom:4px;color:#fff;}
+.widget-def{font-size:13px;opacity:0.92;line-height:1.4;margin-bottom:12px;}
+.widget-footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.15);padding-top:10px;margin-top:5px;}
+.widget-btn{background:#fff;color:var(--primary-dark);border:none;padding:7px 12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;}
+
+.section-label{padding:0 16px;margin:6px 0 10px;font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15px;color:var(--muted);}
+
+/* GRID MATYÈ YO */
+.subjects{padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.subject-card{background:#fff;border-radius:var(--radius-md);padding:18px 14px;box-shadow:var(--shadow-sm);cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:.15s;}
+.subject-card:active{transform:scale(.96);}
+.subject-icon{font-size:26px;}
+.subject-name{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15px;}
+.subject-count{font-size:11px;color:var(--muted);}
+
+/* LESSONS VIEW */
+.lessons-view{display:none;padding:16px;}
+.lessons-view.active{display:block;}
+.lesson-search{width:100%;padding:12px 16px;border-radius:30px;border:1px solid var(--placeholder);background:#fff;font-size:14px;margin-bottom:14px;outline:none;}
+.note-card{background:#fff;border-radius:18px;padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
+.note-title{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.note-title::before{content:"•";color:var(--primary);font-size:22px;line-height:0;}
+.note-def{font-size:13.5px;color:#333;line-height:1.5;margin-bottom:6px;}
+.note-def b{color:var(--primary-dark);}
+.note-expl{font-size:13px;color:var(--muted);font-style:italic;line-height:1.5;}
+.note-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.note-btn{border:none;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:0.15s;}
+.note-btn:active{transform:scale(0.95);}
+.btn-video{background:#000;color:#fff;}
+.btn-share{background:#eef2fb;color:var(--primary-dark);}
+.btn-lock{background:var(--gold);color:#5a4200;}
+
+.premium-overlay{position:absolute;inset:0;background:rgba(255,255,255,.88);backdrop-filter:blur(4px);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:5;}
+.premium-overlay span{font-size:12px;font-weight:700;color:var(--primary-dark);}
+
+.state-msg{text-align:center;padding:40px 20px;color:var(--muted);font-size:13.5px;}
+
+.bottom-actions{padding:6px 16px 20px;}
+.downloadBtn{width:100%;background:var(--primary);color:#fff;border:none;padding:14px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--shadow-md);}
+.loading{text-align:center;margin:10px 0;color:var(--primary);font-weight:600;font-size:13px;}
+
+/* MODAL VIDEO */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.modal-overlay.show{display:flex;}
+.video-modal{background:#000;border-radius:16px;overflow:hidden;width:100%;max-width:420px;position:relative;}
+.video-modal iframe{width:100%;aspect-ratio:16/9;border:0;display:block;}
+.modal-close{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.25);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;z-index:2;}
+
+/* MODAL DEBLOKE */
+.unlock-card{background:#fff;border-radius:22px;padding:26px 22px;width:100%;max-width:340px;text-align:center;}
+.unlock-card .ic{font-size:44px;margin-bottom:8px;}
+.unlock-card h3{font-family:"Baloo 2",sans-serif;font-size:19px;margin-bottom:6px;color:var(--primary-dark);}
+.unlock-card p{font-size:13px;color:var(--muted);margin-bottom:18px;}
+.unlock-opt{display:block;width:100%;padding:13px;border-radius:12px;border:none;font-weight:700;font-size:14px;margin-bottom:10px;cursor:pointer;}
+.opt-coin{background:var(--primary);color:#fff;}
+.opt-ad{background:#eef2fb;color:var(--primary-dark);}
+.opt-pro{background:var(--gold);color:#5a4200;}
+.opt-cancel{background:transparent;color:var(--muted);font-weight:600;}
+
+/* TOAST */
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-100px);background:#333;color:#fff;padding:11px 20px;border-radius:30px;font-size:13.5px;font-weight:500;box-shadow:0 4px 15px rgba(0,0,0,.2);transition:.35s cubic-bezier(.175,.885,.32,1.275);z-index:2000;text-align:center;max-width:90%;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<header class="app-header">
+  <div class="header-left">
+    <button id="backBtn" class="back-btn" onclick="handleBack()">←</button>
+    <div>
+      <div class="header-title" id="pageTitle">Vokabilè & Nòt</div>
+      <div class="header-sub" id="pageSub">Chwazi yon matyè</div>
+    </div>
+  </div>
+  <div class="coin-pill">🪙 <span id="coinCount">0</span></div>
+</header>
+
+<!-- HOME: LISTE MATYÈ & WIDGET JOU A -->
+<div id="subjectsView">
+  <!-- Widget Nòt Jou A (Mache san entènèt tou) -->
+  <div class="daily-widget-card" id="dailyWidget">
+    <div class="widget-tag">💡 Nòt Jou A</div>
+    <div class="widget-title" id="widgetTitle">Ap chaje nòt jou a...</div>
+    <div class="widget-def" id="widgetDef">Chak jou w ap jwenn yon nouvo nosyon pou reitilalize konesans ou.</div>
+    <div class="widget-footer">
+      <button class="widget-btn" onclick="shareDailyWidget()">📤 Pataje</button>
+      <button class="widget-btn" onclick="installWidgetShortcut()" style="background:rgba(255,255,255,0.2); color:#fff;">📲 Mete sou Ekran</button>
+    </div>
+  </div>
+
+  <div class="info-card">
+    <div class="chk">✓</div>
+    <p>Chak nòt se yon definisyon oswa yon nosyon debaz ekri klè an Kreyòl, tire soti nan ansyen egzamen ak pwogram ofisyèl MENFP a. Tout bagay ka mache san koneksyon!</p>
+  </div>
+  
+  <div class="section-label">Matyè yo</div>
+  <div id="subjectsGrid" class="subjects"></div>
+</div>
+
+<!-- LESSONS VIEW -->
+<div id="lessonsView" class="lessons-view">
+  <input id="searchInput" class="lesson-search" placeholder="🔍 Chèche yon nòt oswa definisyon..." oninput="renderNotes()">
+  <div id="notesContainer"></div>
+  <div class="bottom-actions">
+    <button class="downloadBtn" onclick="downloadNotes()">⬇ Telechaje tout nòt matyè sa a</button>
+    <div id="loading" class="loading hidden">Ap prepare fichye a...</div>
+  </div>
+</div>
+
+<!-- Video modal -->
+<div id="videoOverlay" class="modal-overlay" onclick="if(event.target===this)closeVideo()">
+  <div class="video-modal">
+    <button class="modal-close" onclick="closeVideo()">✕</button>
+    <iframe id="videoFrame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+</div>
+
+<!-- Unlock modal -->
+<div id="unlockOverlay" class="modal-overlay" onclick="if(event.target===this)closeUnlock()">
+  <div class="unlock-card">
+    <div class="ic">🔒</div>
+    <h3>Kontni Premium</h3>
+    <p>Nòt sa a fè pati kontni PRO. Chwazi yon opsyon pou debloke l:</p>
+    <button class="unlock-opt opt-coin" onclick="unlockWithCoins()">Peye 15 🪙 Pyès</button>
+    <button class="unlock-opt opt-ad" onclick="unlockWithAd()">📺 Gade yon Piblisite</button>
+    <button class="unlock-opt opt-pro" onclick="window.location.href='home.html'">👑 Vin PRO (Ilimite)</button>
+    <button class="unlock-opt opt-cancel" onclick="closeUnlock()">Anile</button>
+  </div>
+</div>
+
+<script>
+/* ================= FIREBASE INITIALIZATION ================= */
+const firebaseConfig = {
+    apiKey: "AIzaSyDxN2jYclFAeSh9tMvkoeZCTsFvWNQYOzA",
+    authDomain: "ns4supportplus.firebaseapp.com",
+    projectId: "ns4supportplus",
+    storageBucket: "ns4supportplus.firebasestorage.app",
+    messagingSenderId: "1072291248908",
+    appId: "1:1072291248908:web:711d01129b833847c5a729",
+    measurementId: "G-DEYNQ8GQ9B"
+  };
+
+if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* Enable Firebase Offline Capabilities */
+try {
+  db.ref('.info/connected').on('value', () => {});
+} catch(e) {}
+
+/* ================= DATA STRUCTURE ================= */
+const SUBJECTS = [
+  {id:'philosophie', name:'Philosophie', icon:'🧠'},
+  {id:'mathematiques', name:'Mathématiques', icon:'📐'},
+  {id:'physique', name:'Physique', icon:'⚛️'},
+  {id:'chimie', name:'Chimie', icon:'🧪'},
+  {id:'biologie_geologie', name:'Biologie / Géologie', icon:'🌱'},
+  {id:'anglais', name:'Anglais', icon:'🇬🇧'},
+  {id:'espagnol', name:'Espagnol', icon:'🇪🇸'},
+  {id:'kreyol', name:'Kreyòl', icon:'🗣️'},
+  {id:'economie', name:'Économie', icon:'💰'},
+  {id:'arts', name:'Arts', icon:'🎨'},
+  {id:'sciences_sociales', name:'Sciences Sociales', icon:'🌍'}
+];
+
+let currentSubject = null;
+let currentNotes = {};   // { noteId: noteObject }
+let pendingUnlockId = null;
+
+/* ================= USER / LOCAL STORAGE (OFFLINE-FIRST) ================= */
+function getUser(){ return JSON.parse(localStorage.getItem('ns4_user')) || {coins:0, status:'FREE'}; }
+function saveUser(u){ 
+  localStorage.setItem('ns4_user', JSON.stringify(u)); 
+  if(u.uid && navigator.onLine) {
+    db.ref('users/'+u.uid).update({coins:u.coins}).catch(()=>{});
+  }
+}
+function isPro(u){ return u.status==='PRO' && (!u.proExpireAt || u.proExpireAt > Date.now()); }
+
+function getUnlocked(){ return JSON.parse(localStorage.getItem('ns4_unlocked_vocab')) || []; }
+function addUnlocked(id){ 
+  const arr = getUnlocked(); 
+  if(!arr.includes(id)){
+    arr.push(id); 
+    localStorage.setItem('ns4_unlocked_vocab', JSON.stringify(arr));
+  } 
+}
+
+function refreshCoinDisplay(){ 
+  document.getElementById('coinCount').innerText = getUser().coins ?? 0; 
+}
+
+/* Local Caching for offline access */
+function getCachedSubjectNotes(subId) {
+  return JSON.parse(localStorage.getItem('ns4_vocab_cache_' + subId)) || null;
+}
+function setCachedSubjectNotes(subId, data) {
+  localStorage.setItem('ns4_vocab_cache_' + subId, JSON.stringify(data));
+}
+
+/* ================= TOAST SYSTEM ================= */
+let toastT;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.innerText = msg; 
+  t.classList.add('show');
+  clearTimeout(toastT); 
+  toastT = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+/* ================= SUBJECTS LIST & RENDERING ================= */
+function renderSubjects(){
+  const grid = document.getElementById('subjectsGrid');
+  grid.innerHTML = '';
+  
+  SUBJECTS.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+    card.onclick = () => openSubject(s);
+    
+    // Check cached count if available
+    const cached = getCachedSubjectNotes(s.id);
+    const countText = cached ? Object.keys(cached).length + ' nòt' : '...';
+    
+    card.innerHTML = `
+      <div class="subject-icon">${s.icon}</div>
+      <div class="subject-name">${s.name}</div>
+      <div class="subject-count" id="count_${s.id}">${countText}</div>
+    `;
+    grid.appendChild(card);
+
+    // Fetch realtime or update count
+    db.ref('vocabulaire/' + s.id).once('value').then(snap => {
+      if(snap.exists()) {
+        const data = snap.val();
+        setCachedSubjectNotes(s.id, data);
+        const countEl = document.getElementById('count_' + s.id);
+        if(countEl) countEl.innerText = Object.keys(data).length + ' nòt';
+      }
+    }).catch(() => {
+      // Offline fallback already handled by initial render
+    });
+  });
+
+  loadDailyWidgetNote();
+}
+
+function openSubject(subject){
+  currentSubject = subject;
+  document.getElementById('pageTitle').innerText = subject.name;
+  document.getElementById('pageSub').innerText = 'Vokabilè & Nòt';
+  document.getElementById('subjectsView').classList.add('hidden');
+  document.getElementById('lessonsView').classList.add('active');
+  document.getElementById('searchInput').value = '';
+  loadNotes(subject.id);
+}
+
+function handleBack(){
+  if(document.getElementById('lessonsView').classList.contains('active')){
+    document.getElementById('lessonsView').classList.remove('active');
+    document.getElementById('subjectsView').classList.remove('hidden');
+    document.getElementById('pageTitle').innerText = 'Vokabilè & Nòt';
+    document.getElementById('pageSub').innerText = 'Chwazi yon matyè';
+    currentSubject = null;
+  } else {
+    window.location.href = 'home.html';
+  }
+}
+
+/* ================= LOAD & RENDER NOTES (OFFLINE SUPPORTE) ================= */
+function loadNotes(subjectId){
+  const container = document.getElementById('notesContainer');
+  container.innerHTML = '<div class="state-msg">Ap chaje nòt yo...</div>';
+
+  // 1. First render from local cache if offline or fast loading
+  const cached = getCachedSubjectNotes(subjectId);
+  if(cached) {
+    currentNotes = cached;
+    renderNotes();
+  }
+
+  // 2. Sync from Firebase
+  db.ref('vocabulaire/' + subjectId).on('value', snap => {
+    if(snap.exists()){
+      currentNotes = {};
+      snap.forEach(child => { 
+        currentNotes[child.key] = { id: child.key, ...child.val() }; 
+      });
+      setCachedSubjectNotes(subjectId, currentNotes);
+      renderNotes();
+    } else if(!cached) {
+      currentNotes = {};
+      renderNotes();
+    }
+  }, err => {
+    console.log("Offline mode or load error:", err);
+    if(!cached) {
+      container.innerHTML = '<div class="state-msg">Ou offline epi pa gen okenn nòt ki anregistre pou matyè sa a ankò.</div>';
+    }
+  });
+}
+
+function renderNotes(){
+  const container = document.getElementById('notesContainer');
+  const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+  const unlocked = getUnlocked();
+  const user = getUser();
+  
+  const entries = Object.entries(currentNotes).filter(([id, n]) => {
+    const title = (n.titre || '').toLowerCase();
+    const def = (n.definition || '').toLowerCase();
+    return !q || title.includes(q) || def.includes(q);
+  });
+
+  if(entries.length === 0){
+    container.innerHTML = '<div class="state-msg">Okenn nòt pa jwenn pou rechèch sa a.</div>';
+    return;
+  }
+
+  container.innerHTML = entries.map(([id, n]) => {
+    const isLocked = n.premium && !isPro(user) && !unlocked.includes(id);
+    return `
+    <div class="note-card">
+      ${isLocked ? `
+        <div class="premium-overlay">
+          <div style="font-size:26px;">🔒</div>
+          <span>Kontni Premium</span>
+          <button class="note-btn btn-lock" onclick="openUnlock('${id}')">Debloke Pou Li l</button>
+        </div>` : ''}
+      
+      <div class="note-title">${escapeHtml(n.titre || 'San tit')}</div>
+      <div class="note-def"><b>Definisyon :</b> ${escapeHtml(n.definition || '—')}</div>
+      ${n.explication ? `<div class="note-expl">Eksplikasyon : ${escapeHtml(n.explication)}</div>` : ''}
+      
+      <div class="note-actions">
+        ${n.videoId ? `<button class="note-btn btn-video" onclick="playVideo('${n.videoId}')">▶ Videyo</button>` : ''}
+        <button class="note-btn btn-share" onclick="shareNote('${escapeHtml(n.titre)}', '${escapeHtml(n.definition)}')">📤 Pataje</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(s){ 
+  if(!s) return '';
+  const d = document.createElement('div'); 
+  d.innerText = s; 
+  return d.innerHTML; 
+}
+
+/* ================= ACTION: PATAJE YON LESSON / NÒT ================= */
+function shareNote(titre, definition) {
+  const shareText = `🎓 NS4 SUPPORT+ | Nòt Vokabilè:\n\n📌 *${titre}*\n📖 ${definition}\n\nTelechaje aplikasyon an pou kouri prepare BAC ou!`;
+  
+  if (navigator.share) {
+    navigator.share({
+      title: 'NS4 Support+ - ' + titre,
+      text: shareText
+    }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(shareText).then(() => {
+      showToast('Nòt sa a kopye nan presse-papier! 📋');
+    }).catch(() => {
+      showToast('Enposib kopye nòt la.');
+    });
+  }
+}
+
+/* ================= DAILY WIDGET SYSTEM (AUTOMATIC & RANDOM CHAK JOU) ================= */
+function loadDailyWidgetNote() {
+  const todayKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const savedWidget = JSON.parse(localStorage.getItem('ns4_daily_widget'));
+
+  if (savedWidget && savedWidget.date === todayKey) {
+    displayWidgetData(savedWidget.title, savedWidget.def);
+    return;
+  }
+
+  // Pick a random note across all cached subjects
+  let allCachedNotes = [];
+  SUBJECTS.forEach(s => {
+    const notes = getCachedSubjectNotes(s.id);
+    if (notes) {
+      Object.values(notes).forEach(n => {
+        if (!n.premium) allCachedNotes.push(n);
+      });
+    }
+  });
+
+  if (allCachedNotes.length > 0) {
+    const randomNote = allCachedNotes[Math.floor(Math.random() * allCachedNotes.length)];
+    const widgetData = {
+      date: todayKey,
+      title: randomNote.titre,
+      def: randomNote.definition
+    };
+    localStorage.setItem('ns4_daily_widget', JSON.stringify(widgetData));
+    displayWidgetData(widgetData.title, widgetData.def);
+  } else {
+    // Default fallback if no cache exists yet
+    displayWidgetData(
+      "Sistèm Diérèse (Kreyòl/Français)", 
+      "Yon séparation de deux voyelles contiguës en deux syllabes distinctes."
+    );
+  }
+}
+
+function displayWidgetData(title, def) {
+  document.getElementById('widgetTitle').innerText = title;
+  document.getElementById('widgetDef').innerText = def;
+}
+
+function shareDailyWidget() {
+  const title = document.getElementById('widgetTitle').innerText;
+  const def = document.getElementById('widgetDef').innerText;
+  shareNote(title, def);
+}
+
+function installWidgetShortcut() {
+  showToast("📲 Pou mete widget sa a sou ekran w: Klike sou 3 ti pwen browser a pou w chwazi 'Ajouter à l'écran d'accueil'.");
+}
+
+/* ================= VIDEO MODAL ================= */
+function playVideo(youtubeId){
+  document.getElementById('videoFrame').src = 'https://www.youtube.com/embed/' + youtubeId + '?autoplay=1&rel=0';
+  document.getElementById('videoOverlay').classList.add('show');
+}
+function closeVideo(){
+  document.getElementById('videoOverlay').classList.remove('show');
+  document.getElementById('videoFrame').src = '';
+}
+
+/* ================= UNLOCK SYSTEM ================= */
+function openUnlock(noteId){ 
+  pendingUnlockId = noteId; 
+  document.getElementById('unlockOverlay').classList.add('show'); 
+}
+function closeUnlock(){ 
+  document.getElementById('unlockOverlay').classList.remove('show'); 
+  pendingUnlockId = null; 
+}
+
+function unlockWithCoins(){
+  if(!pendingUnlockId) return;
+  const user = getUser();
+  if((user.coins || 0) < 15){ 
+    showToast('Ou pa gen ase pyès (15 🪙 bezwen). Ou ka gade yon piblisite pito.'); 
+    return; 
+  }
+  user.coins -= 15; 
+  saveUser(user); 
+  refreshCoinDisplay();
+  
+  addUnlocked(pendingUnlockId);
+  showToast('Nòt sa a debloke ak siksè! ✅');
+  closeUnlock(); 
+  renderNotes();
+}
+
+function unlockWithAd(){
+  if(!pendingUnlockId) return;
+  showToast('Piblisite ap chaje... 📺');
+  setTimeout(()=>{
+    addUnlocked(pendingUnlockId);
+    showToast('Mèsi! Nòt la debloke 🎉');
+    closeUnlock(); 
+    renderNotes();
+  }, 2500); 
+}
+
+/* ================= DOWNLOAD (EXPORT TXT FILE FOR OFFLINE STUDY) ================= */
+function downloadNotes(){
+  if(!currentSubject) return;
+  const loading = document.getElementById('loading');
+  loading.classList.remove('hidden');
+  
+  setTimeout(()=>{
+    const user = getUser();
+    const unlocked = getUnlocked();
+    let text = `=========================================\nNS4 SUPPORT+ — ${currentSubject.name.toUpperCase()}\n=========================================\n\n`;
+    
+    let count = 0;
+    Object.values(currentNotes).forEach(n => {
+      const isLocked = n.premium && !isPro(user) && !unlocked.includes(n.id);
+      if(isLocked) return; 
+      
+      count++;
+      text += `${count}. ${n.titre}\n`;
+      text += `Definisyon: ${n.definition}\n`;
+      if(n.explication) text += `Eksplikasyon: ${n.explication}\n`;
+      text += `-----------------------------------------\n\n`;
+    });
+
+    if(count === 0) {
+      showToast("Pa gen nòt lib pou telechaje nan matyè sa a.");
+      loading.classList.add('hidden');
+      return;
+    }
+
+    const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `NS4_${currentSubject.id}_vokabile.txt`;
+    a.click();
+    
+    loading.classList.add('hidden');
+    showToast("Fichye nòt yo telechaje ak siksè! 📄");
+  }, 500);
+}
+
+/* ================= INITIALIZATION ================= */
+window.addEventListener('DOMContentLoaded', ()=>{
+  refreshCoinDisplay();
+  renderSubjects();
+});
+</script>
+<script src="stats.js"></script>
+<script src="ns4-math.js"></script>
+<script src="ns4-content.js"></script>
+<script>
+  NS4Content.install("vocab", { renderFn: "renderNotes", containerId: "notesContainer" });
+</script>
+</body>
+</html>
