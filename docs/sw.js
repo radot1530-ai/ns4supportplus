@@ -65,24 +65,34 @@ async function idbGet(key) {
 }
 
 async function downloadAllFiles() {
+  const total = ALL_FILES.length;
+  let done = 0;
+  const clientsList = await self.clients.matchAll({ includeUncontrolled: true });
+  const broadcast = (msg) => clientsList.forEach((c) => c.postMessage(msg));
+  
+  broadcast({ type: 'dl-start', total });
+  
   await Promise.all(ALL_FILES.map(async (url) => {
     try {
       const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) { console.warn('SW: 404 sou', url); return; }
-      const body = await res.blob();
-      const contentType = res.headers.get('content-type') || '';
-      await idbPut(url, { body, contentType, manifestVersion: MANIFEST_VERSION });
-
-      // Si se index.html, sove l tou anba kle rasin lan (BASE_PATH)
-      if (url === BASE_PATH + 'index.html') {
-        await idbPut(ROOT_ALIAS, { body, contentType, manifestVersion: MANIFEST_VERSION });
+      if (res.ok) {
+        const body = await res.blob();
+        const contentType = res.headers.get('content-type') || '';
+        await idbPut(url, { body, contentType, manifestVersion: MANIFEST_VERSION });
+        if (url === BASE_PATH + 'index.html') {
+          await idbPut(ROOT_ALIAS, { body, contentType, manifestVersion: MANIFEST_VERSION });
+        }
       }
     } catch (e) {
       console.warn('SW: erè telechajman', url, e);
+    } finally {
+      done++;
+      broadcast({ type: 'dl-progress', done, total });
     }
   }));
+  
+  broadcast({ type: 'dl-complete', done, total });
 }
-
 self.addEventListener('install', (event) => {
   event.waitUntil(downloadAllFiles().then(() => self.skipWaiting()));
 });
@@ -95,7 +105,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
-
+  
   event.respondWith((async () => {
     try {
       const res = await fetch(event.request);
@@ -109,7 +119,7 @@ self.addEventListener('fetch', (event) => {
     } catch (e) {
       const cached = await idbGet(url.pathname);
       if (cached) return new Response(cached.body, { headers: { 'Content-Type': cached.contentType } });
-
+      
       if (event.request.mode === 'navigate') {
         const fallback = await idbGet(BASE_PATH + 'index.html');
         if (fallback) return new Response(fallback.body, { headers: { 'Content-Type': fallback.contentType } });
