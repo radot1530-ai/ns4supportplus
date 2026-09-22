@@ -504,5 +504,12 @@
 <script src="stats.js"></script>
 <script src="home.js"></script>
 <script src="notifications.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('SW enskri ✔'))
+      .catch((err) => console.log('SW echwe:', err));
+  }
+</script>
 </body>
 </html>
