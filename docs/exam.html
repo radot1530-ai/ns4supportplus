@@ -343,6 +343,7 @@ function loadExams() {
   if (cached && typeof cached === "object") {
     ALL_EXAMS = cached;
     renderDash(); renderFilters(); renderList();
+    loadDailyExamWidget(); // 🔵 ajouté
   }
 
   let answered = false;
@@ -352,13 +353,14 @@ function loadExams() {
     }
   }, 8000);
 
-  db.ref("examens").on("value", (snap) => {
+    db.ref("examens").on("value", (snap) => {
     answered = true; clearTimeout(timer);
     const all = {};
     snap.forEach((child) => { all[child.key] = normalize(child.key, child.val() || {}); });
     ALL_EXAMS = all;
     safeSet("ns4_exams_cache", all);
     renderDash(); renderFilters(); renderList();
+    loadDailyExamWidget();
 
     // Si yon egzamen louvri epi li chanje sou sèvè a, rafrechi l (sèlman si kontni an chanje)
     if (currentExamId && ALL_EXAMS[currentExamId]) {
@@ -720,29 +722,6 @@ window.addEventListener("load", () => {
     loadExams();
   });
 });
-</script>
-<div id="sw-status" style="display:none;font-size:14px;color:#666;">
-  ⏳ N ap prepare done pou mòd san entènèt... <span id="sw-count">0/0</span>
-</div>
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(console.error);
-
-  navigator.serviceWorker.addEventListener('message', (e) => {
-    const { type, done, total } = e.data || {};
-    const box = document.getElementById('sw-status');
-    const cnt = document.getElementById('sw-count');
-    if (type === 'dl-start' || type === 'dl-progress') {
-      box.style.display = 'block';
-      cnt.textContent = `${done || 0}/${total}`;
-    }
-    if (type === 'dl-complete') {
-      box.textContent = '✅ Done yo pare pou mòd san entènèt.';
-      setTimeout(() => (box.style.display = 'none'), 3000);
-    }
-  });
-}
 </script>
 </body>
 </html>
