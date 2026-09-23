@@ -595,6 +595,12 @@ function copyText(text) {
 // Pataje: fenèt sistèm nan si li egziste; sinon kopye tèks la (epi ou kole l nan WhatsApp/Messenger).
 function shareContent(o) {
   const full = o.text + "\n\n" + o.url;
+
+  if (window.AndroidShare) {                          // 🔵 ajouté
+    window.AndroidShare.shareText(o.title, o.text, o.url);
+    return Promise.resolve();
+  }
+
   const tryNative = navigator.share
     ? navigator.share({ title: o.title, text: o.text, url: o.url }).then(() => "ok", (e) => (e && e.name === "AbortError" ? "abort" : "fail"))
     : Promise.resolve("fail");
