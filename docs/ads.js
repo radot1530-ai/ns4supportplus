@@ -1,51 +1,48 @@
-/* ================= NS4 ADS — infrastructure commune ================= */
-const NS4Ads = {
-  isPro() {
-    try {
-      const u = JSON.parse(localStorage.getItem('ns4_user') || '{}');
-      return u.status === 'PRO' && (!u.proExpireAt || u.proExpireAt > Date.now());
-    } catch (e) { return false; }
-  },
+/* ================= NS4 ADS — pont commun pour toutes les pages ================= */
 
-  // Bannière permanente de home.html — visible pour TOUT LE MONDE (FREE + PRO)
-  showHomeBanner() {
+// Contrat attendu par le système Ads déjà présent dans quiz.js — réutilisable ailleurs aussi
+window.NS4_AD_BRIDGE = {
+  showBanner(id) {
     if (window.AndroidAds) window.AndroidAds.setBannerVisible(true);
   },
-
-  // Bannière des autres pages (quiz, milti, defi) — jamais pour PRO
-  applyPageBanner(showForFree) {
-    if (!window.AndroidAds) return;
-    const show = !this.isPro() && !!showForFree;
-    window.AndroidAds.setBannerVisible(show);
+  hideBanner() {
+    if (window.AndroidAds) window.AndroidAds.setBannerVisible(false);
   },
-
-  // Interstitiel — jamais pour PRO ; callback appelé dans tous les cas (pub vue, refusée, ou indisponible)
-  showInterstitial(callback) {
-    const done = callback || function () {};
-    if (this.isPro() || !window.AndroidAds) { done(); return; }
-    window._ns4AdsCallback = done;
-    window.AndroidAds.showInterstitial();
-  },
-
-  // Verrou rewarded obligatoire (vocab/fòmil/exam) — PRO passe direct
-  requireRewarded(onUnlocked, onNotReady) {
-    if (this.isPro() || !window.AndroidAds) { onUnlocked(); return; }
-    window._ns4RewardGateCallback = onUnlocked;
-    window._ns4RewardGateNotReady = onNotReady || function () {};
-    window.AndroidAds.showRewardedAd('unlock_note');
+  showInterstitial(id) {
+    return new Promise((resolve) => {
+      if (!window.AndroidAds) { resolve(); return; }
+      window._ns4InterstitialResolve = resolve;
+      window.AndroidAds.showInterstitial();
+    });
   }
 };
 
-// ---------- Callbacks appelés depuis MainActivity.java ----------
-
+// Callback natif (MainActivity.java) quand l'interstitiel se ferme
 function onInterstitialClosed() {
-  if (typeof window._ns4AdsCallback === 'function') {
-    const cb = window._ns4AdsCallback;
-    window._ns4AdsCallback = null;
-    cb();
+  if (typeof window._ns4InterstitialResolve === 'function') {
+    const r = window._ns4InterstitialResolve;
+    window._ns4InterstitialResolve = null;
+    r();
   }
 }
 
+// Vérification PRO partagée (même logique que partout ailleurs dans le code)
+function ns4IsPro() {
+  try {
+    const u = JSON.parse(localStorage.getItem('ns4_user') || '{}');
+    return u.status === 'PRO' && !!u.proExpireAt && u.proExpireAt > Date.now();
+  } catch (e) { return false; }
+}
+
+// Verrou rewarded obligatoire (vocab/fòmil/exam) — PRO passe direct
+function ns4RequireRewarded(onUnlocked, onNotReady) {
+  if (ns4IsPro() || !window.AndroidAds) { onUnlocked(); return; }
+  window._ns4RewardGateCallback = onUnlocked;
+  window._ns4RewardGateNotReady = onNotReady || function () {};
+  window.AndroidAds.showRewardedAd('unlock_note');
+}
+
+// Callbacks natifs pour rewarded (coins + unlock_note)
 function onAdRewardEarned(purpose) {
   if (purpose === 'coins') {
     if (typeof StatsAPI !== 'undefined') StatsAPI.addReward(5, 10, "ads");
@@ -65,4 +62,12 @@ function onAdNotReady(purpose) {
     window._ns4RewardGateNotReady = null;
     cb();
   }
+}
+
+// Bannière simple pour pages SANS système Ads propre (milti, defi, home)
+function ns4ShowBanner() {
+  if (!ns4IsPro() && window.AndroidAds) window.AndroidAds.setBannerVisible(true);
+}
+function ns4HideBanner() {
+  if (window.AndroidAds) window.AndroidAds.setBannerVisible(false);
 }
