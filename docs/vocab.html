@@ -399,11 +399,10 @@ function escapeHtml(s){
 function shareNote(titre, definition) {
   const shareText = `🎓 NS4 SUPPORT+ | Nòt Vokabilè:\n\n📌 *${titre}*\n📖 ${definition}\n\nTelechaje aplikasyon an pou kouri prepare BAC ou!`;
   
-  if (navigator.share) {
-    navigator.share({
-      title: 'NS4 Support+ - ' + titre,
-      text: shareText
-    }).catch(() => {});
+  if (window.AndroidShare) { // 🔵 ajouté
+    window.AndroidShare.shareText('NS4 Support+ - ' + titre, shareText, '');
+  } else if (navigator.share) {
+    navigator.share({ title: 'NS4 Support+ - ' + titre, text: shareText }).catch(() => {});
   } else {
     navigator.clipboard.writeText(shareText).then(() => {
       showToast('Nòt sa a kopye nan presse-papier! 📋');
@@ -455,6 +454,7 @@ function loadDailyWidgetNote() {
 function displayWidgetData(title, def) {
   document.getElementById('widgetTitle').innerText = title;
   document.getElementById('widgetDef').innerText = def;
+  if (window.AndroidWidget) window.AndroidWidget.saveNote('vocab', title, def); // 🔵 ajouté
 }
 
 function shareDailyWidget() {
@@ -464,7 +464,11 @@ function shareDailyWidget() {
 }
 
 function installWidgetShortcut() {
-  showToast("📲 Pou mete widget sa a sou ekran w: Klike sou 3 ti pwen browser a pou w chwazi 'Ajouter à l'écran d'accueil'.");
+  if (window.AndroidWidget && window.AndroidWidget.requestPinWidget) {
+    window.AndroidWidget.requestPinWidget();
+  } else {
+    showToast("📲 Kenbe dwèt sou ekran akèy la, chwazi Widgets, jwenn NS4 Support+.");
+  }
 }
 
 /* ================= VIDEO MODAL ================= */
@@ -566,11 +570,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
 <script src="ns4-content.js"></script>
 <script>
   NS4Content.install("vocab", { renderFn: "renderNotes", containerId: "notesContainer" });
-</script>
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(console.error);
-}
 </script>
 </body>
 </html>
