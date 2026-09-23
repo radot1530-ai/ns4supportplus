@@ -376,7 +376,7 @@
   <section class="ad-container">
     <div class="ad-label">Anons</div>
     <div class="ad-space" id="ad-space">
-      <span id="ad-text">Banyè Google AdMob ap parèt la</span>
+      <span id="ad-text"></span>
     </div>
   </section>
 
@@ -501,31 +501,76 @@
 </div>
 
 <!-- JS INTEGRASYON -->
-<script src="stats.js"></script>
-<script src="home.js"></script>
-<script src="notifications.js"></script>
-<div id="sw-status" style="display:none;font-size:14px;color:#666;">
-  ⏳ N ap prepare done pou mòd san entènèt... <span id="sw-count">0/0</span>
+<!-- POPUP TELECHAJMAN SW -->
+<div id="sw-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:85%;text-align:center;box-shadow:0 15px 35px rgba(0,0,0,.3);">
+    <div id="sw-icon" style="font-size:38px;margin-bottom:8px;">⏳</div>
+    <div id="sw-title" style="font-weight:800;font-size:16px;color:#24439a;margin-bottom:6px;">Done yo ap telechaje pou w ka sèvi avèk aplikasyon an sa entènèt ...</div>
+    <div style="font-size:13px;color:#666;margin-bottom:16px;">Tanpri pran yon ti pasyans...</div>
+    <div style="background:#e9ecf3;border-radius:10px;height:10px;overflow:hidden;margin-bottom:8px;">
+      <div id="sw-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#12d51c,#00e676);transition:width .3s;"></div>
+    </div>
+    <div id="sw-count" style="font-size:12px;color:#999;font-weight:600;">0/0</div>
+    <button id="sw-skip" style="display:none;margin-top:16px;border:none;background:#24439a;color:#fff;padding:10px 24px;border-radius:20px;font-weight:700;font-size:13px;">Kontinye kanmenm</button>
+  </div>
 </div>
 
 <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(console.error);
+(function(){
+  const overlay = document.getElementById('sw-overlay');
+  const bar     = document.getElementById('sw-bar');
+  const count   = document.getElementById('sw-count');
+  const title   = document.getElementById('sw-title');
+  const icon    = document.getElementById('sw-icon');
+  const skipBtn = document.getElementById('sw-skip');
 
-  navigator.serviceWorker.addEventListener('message', (e) => {
-    const { type, done, total } = e.data || {};
-    const box = document.getElementById('sw-status');
-    const cnt = document.getElementById('sw-count');
-    if (type === 'dl-start' || type === 'dl-progress') {
-      box.style.display = 'block';
-      cnt.textContent = `${done || 0}/${total}`;
-    }
-    if (type === 'dl-complete') {
-      box.textContent = '✅ Done yo pare pou mòd san entènèt.';
-      setTimeout(() => (box.style.display = 'none'), 3000);
-    }
-  });
-}
+  const show = () => overlay.style.display = 'flex';
+  const hide = () => overlay.style.display = 'none';
+  const setProgress = (done, total) => {
+    bar.style.width = (total ? Math.round(done/total*100) : 0) + '%';
+    count.textContent = done + '/' + total;
+  };
+
+  // Si okenn nouvèl pa rive nan 6s, pa kenbe moun nan bloke
+  const safety = setTimeout(() => skipBtn.style.display = 'inline-block', 6000);
+  skipBtn.onclick = hide;
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(console.error);
+
+    navigator.serviceWorker.addEventListener('message', (e) => {
+      const { type, done, total } = e.data || {};
+      if (type === 'dl-start')    { show(); setProgress(0, total); }
+      if (type === 'dl-progress') { show(); setProgress(done, total); }
+      if (type === 'dl-complete') {
+        clearTimeout(safety);
+        setProgress(done, total);
+        icon.textContent = '✅';
+        title.textContent = 'Done yo pare!';
+        setTimeout(hide, 1200);
+      }
+    });
+
+    // Si done yo deja sove (vizit anvan), pa gen rezon pou blòke moun nan
+    navigator.serviceWorker.ready.then(() => {
+      const req = indexedDB.open('ns4-offline-db', 1);
+      req.onsuccess = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains('files')) return;
+        db.transaction('files', 'readonly').objectStore('files').count().onsuccess = (ev) => {
+          if (ev.target.result > 0) { clearTimeout(safety); hide(); }
+        };
+      };
+    });
+  }
+})();
 </script>
+<script src="stats.js"></script>
+<script src="ads.js"></script>
+<script src="home.js"></script>
+<script>
+  window.addEventListener('load', () => NS4Ads.showHomeBanner());
+</script>
+<script src="notifications.js"></script>
 </body>
 </html>
