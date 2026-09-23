@@ -305,9 +305,10 @@ function unlockWithAd(){
   }, 2500);
 }
 
-window.addEventListener('load', ()=>{
+window.addEventListener('load', () => {
   refreshCoinDisplay();
   renderChapters();
+  loadDailyFormulaWidget(); // 🔵 ajouté
 });
 </script>
 <script src="stats.js"></script>
@@ -315,28 +316,27 @@ window.addEventListener('load', ()=>{
 <script src="ns4-content.js"></script>
 <script>
   NS4Content.install("vocab", { renderFn: "renderNotes", containerId: "notesContainer" });
-</script>
-<div id="sw-status" style="display:none;font-size:14px;color:#666;">
-  ⏳ N ap prepare done pou mòd san entènèt... <span id="sw-count">0/0</span>
-</div>
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(console.error);
-
-  navigator.serviceWorker.addEventListener('message', (e) => {
-    const { type, done, total } = e.data || {};
-    const box = document.getElementById('sw-status');
-    const cnt = document.getElementById('sw-count');
-    if (type === 'dl-start' || type === 'dl-progress') {
-      box.style.display = 'block';
-      cnt.textContent = `${done || 0}/${total}`;
-    }
-    if (type === 'dl-complete') {
-      box.textContent = '✅ Done yo pare pou mòd san entènèt.';
-      setTimeout(() => (box.style.display = 'none'), 3000);
-    }
-  });
+  
+  
+  /* ================= DAILY WIDGET (Fòmil) ================= */
+function loadDailyFormulaWidget() {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const saved = JSON.parse(localStorage.getItem('ns4_daily_fomil') || 'null');
+  if (saved && saved.date === todayKey) {
+    if (window.AndroidWidget) window.AndroidWidget.saveNote('fomil', saved.title, saved.text);
+    return;
+  }
+  const randomChapter = CHAPTERS[Math.floor(Math.random() * CHAPTERS.length)];
+  db.ref('fomil/' + randomChapter.id).once('value').then(snap => {
+    if (!snap.exists()) return;
+    const entries = [];
+    snap.forEach(child => { const v = child.val(); if (v && !v.premium) entries.push(v); });
+    if (entries.length === 0) return;
+    const pick = entries[Math.floor(Math.random() * entries.length)];
+    const data = { date: todayKey, title: pick.titre || randomChapter.name, text: pick.enonce || '' };
+    localStorage.setItem('ns4_daily_fomil', JSON.stringify(data));
+    if (window.AndroidWidget) window.AndroidWidget.saveNote('fomil', data.title, data.text);
+  }).catch(() => {});
 }
 </script>
 </body>
