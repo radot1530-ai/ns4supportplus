@@ -515,24 +515,18 @@ function updateDOMWithUserData(data) {
 
 // Gade piblisite pou fè pyès
 let watchingAd = false;
+// Dans home.js — SUPPRIME les anciennes fonctions onAdRewardEarned() et onAdNotReady()
+// Et remplace watchAdForCoins() par :
 function watchAdForCoins() {
     showToast("Piblisite ap chaje...", "⏳");
     if (window.AndroidAds) {
-        window.AndroidAds.showRewardedAd();
+        window.AndroidAds.showRewardedAd('coins'); // 🔵 'coins' ajouté
     } else {
         showToast("Pa disponib sou navigatè, sèlman sou app la.", "⚠️");
     }
 }
 
 // 🔵 Appelée par MainActivity.java quand la récompense est gagnée
-function onAdRewardEarned() {
-    StatsAPI.addReward(5, 10, "ads");
-    showToast("Mèsi dèske w te gade piblisite a!", "📺");
-}
-
-function onAdNotReady() {
-    showToast("Piblisite a poko pare, eseye ankò nan kèk segonn.", "⚠️");
-}
 
 /*=========================================================
   8. DEMARE
