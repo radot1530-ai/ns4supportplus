@@ -299,10 +299,6 @@ h1 {
 }
 
 /* ---------- MENU NIVO (grid 2 kolòn) ---------- */
-#answers.menuGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.menuGrid .levelBtn, .menuGrid .finalBtn { margin: 0; width: 100%; }
-.menuGrid .finalBtn { grid-column: 1 / -1; margin-top: 6px; }
-.finalBtn.locked { background: #ddd; color: #888; box-shadow: none; cursor: not-allowed; }
 
 /* ---------- EKSPLIKASYON ---------- */
 .explanation {
