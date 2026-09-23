@@ -1,8 +1,5 @@
 package com.ns4.quiz;
 
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
-import android.view.View;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -10,6 +7,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -18,6 +16,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -28,6 +27,8 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 
@@ -36,12 +37,15 @@ public class MainActivity extends AppCompatActivity {
     WebView webView;
     AdView adView;
     RewardedAd rewardedAd;
+    InterstitialAd interstitialAd;
 
     private ValueCallback<Uri[]> filePathCallback;
     private ActivityResultLauncher<Intent> fileChooserLauncher;
+    private long lastBackPressTime = 0;
 
     // ⚠️ IDs de TEST Google — remplace par tes vrais IDs une fois validé
     private static final String REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917";
+    private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         adView.loadAd(adRequest);
 
         loadRewardedAd();
+        loadInterstitialAd();
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -127,10 +132,26 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // ---------- Pont : publicités récompensées ----------
+    private void loadInterstitialAd() {
+        AdRequest adRequest = new AdRequest.Builder().build();
+        InterstitialAd.load(this, INTERSTITIAL_AD_UNIT_ID, adRequest, new InterstitialAdLoadCallback() {
+            @Override
+            public void onAdLoaded(InterstitialAd ad) {
+                interstitialAd = ad;
+            }
+
+            @Override
+            public void onAdFailedToLoad(LoadAdError loadAdError) {
+                interstitialAd = null;
+            }
+        });
+    }
+
+    // ---------- Pont : publicités (rewarded + interstitiel + bannière) ----------
     public class AdBridge {
+
         @JavascriptInterface
-        public void showRewardedAd() {
+        public void showRewardedAd(String purpose) {
             runOnUiThread(() -> {
                 if (rewardedAd != null) {
                     rewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
@@ -141,12 +162,43 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     rewardedAd.show(MainActivity.this, rewardItem ->
-                        webView.post(() -> webView.evaluateJavascript("onAdRewardEarned();", null))
+                        webView.post(() -> webView.evaluateJavascript(
+                            "if(window.onAdRewardEarned) onAdRewardEarned('" + purpose + "');", null))
                     );
                 } else {
-                    webView.post(() -> webView.evaluateJavascript("onAdNotReady();", null));
+                    webView.post(() -> webView.evaluateJavascript(
+                        "if(window.onAdNotReady) onAdNotReady('" + purpose + "');", null));
                     loadRewardedAd();
                 }
+            });
+        }
+
+        @JavascriptInterface
+        public void showInterstitial() {
+            runOnUiThread(() -> {
+                if (interstitialAd != null) {
+                    interstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                        @Override
+                        public void onAdDismissedFullScreenContent() {
+                            interstitialAd = null;
+                            loadInterstitialAd();
+                            webView.post(() -> webView.evaluateJavascript(
+                                "if(window.onInterstitialClosed) onInterstitialClosed();", null));
+                        }
+                    });
+                    interstitialAd.show(MainActivity.this);
+                } else {
+                    loadInterstitialAd();
+                    webView.post(() -> webView.evaluateJavascript(
+                        "if(window.onInterstitialClosed) onInterstitialClosed();", null));
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void setBannerVisible(boolean visible) {
+            runOnUiThread(() -> {
+                if (adView != null) adView.setVisibility(visible ? View.VISIBLE : View.GONE);
             });
         }
     }
@@ -193,12 +245,34 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // ---------- Bouton retour : toujours vers home.html, double-appui pour quitter ----------
     @Override
     public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
+        webView.evaluateJavascript(
+            "(function(){ try { if (typeof window.onAndroidBackPressed === 'function') { return window.onAndroidBackPressed() ? 'true' : 'false'; } } catch(e){} return 'false'; })();",
+            value -> {
+                boolean handledByPage = "true".equals(value);
+                if (!handledByPage) {
+                    runOnUiThread(this::handleNativeBack);
+                }
+            }
+        );
+    }
+
+    private void handleNativeBack() {
+        String url = webView.getUrl();
+        boolean isHome = url != null && (url.endsWith("home.html") || url.endsWith("ns4supportplus/") || url.endsWith("index.html"));
+
+        if (isHome) {
+            long now = System.currentTimeMillis();
+            if (now - lastBackPressTime < 2000) {
+                finish();
+            } else {
+                lastBackPressTime = now;
+                Toast.makeText(this, "Peze retou ankò pou kite app la", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            super.onBackPressed();
+            webView.loadUrl("https://radot1530-ai.github.io/ns4supportplus/home.html");
         }
     }
 
