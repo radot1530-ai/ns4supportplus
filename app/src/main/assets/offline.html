@@ -1,16 +1,138 @@
 <!DOCTYPE html>
-<html>
+<html lang="ht">
 <head>
-    <meta charset="UTF-8">
-    <title>Pas de connexion</title>
-    <style>
-        body { font-family: Arial; text-align: center; padding: 50px; }
-        h1 { color: #999; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>San Koneksyon — NS4 Support+</title>
+<style>
+  :root{
+    --primary:#24439a;
+    --primary-dark:#1d3783;
+    --gold:#ffc107;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{
+    height:100%;
+    font-family:'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+    background:linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color:#fff;
+    overflow:hidden;
+  }
+  body{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0);
+  }
+
+  /* Filigrane "Global Plis +∞" en tuiles répétées */
+  #watermark{
+    position:fixed;
+    inset:-60% -20%;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    transform:rotate(-24deg);
+    z-index:0;
+    pointer-events:none;
+    opacity:0.07;
+  }
+  .wm-row{
+    white-space:nowrap;
+    font-size:30px;
+    font-weight:800;
+    letter-spacing:2px;
+  }
+
+  main{
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    padding:32px 28px;
+    max-width:360px;
+  }
+
+  .logo-badge{
+    width:88px;height:88px;
+    border-radius:26px;
+    background:rgba(255,255,255,0.12);
+    border:2px solid rgba(255,255,255,0.35);
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;font-weight:800;
+    margin-bottom:16px;
+    backdrop-filter:blur(4px);
+  }
+  .app-name{
+    font-size:24px;font-weight:800;letter-spacing:0.3px;margin-bottom:6px;
+  }
+  .version-pill{
+    display:inline-block;
+    background:var(--gold);
+    color:var(--primary-dark);
+    font-size:12px;font-weight:800;
+    padding:3px 12px;border-radius:20px;
+    margin-bottom:30px;
+    letter-spacing:0.3px;
+  }
+
+  .wifi-icon{ margin-bottom:20px; }
+
+  h1{font-size:19px;font-weight:700;margin-bottom:8px;}
+  p{font-size:14px;line-height:1.5;color:rgba(255,255,255,0.8);margin-bottom:28px;}
+
+  button{
+    border:none;
+    background:#fff;
+    color:var(--primary);
+    font-size:15px;font-weight:700;
+    padding:13px 34px;
+    border-radius:30px;
+    cursor:pointer;
+    box-shadow:0 6px 18px rgba(0,0,0,0.25);
+    transition:transform 0.15s;
+  }
+  button:active{transform:scale(0.95);}
+</style>
 </head>
 <body>
-    <h1>📡 Pas de connexion Internet</h1>
-    <p>Attends la connexion ou réessaie.</p>
-    <button onclick="location.reload()">Réessayer</button>
+
+  <div id="watermark"></div>
+
+  <main>
+    <div class="logo-badge">NS4</div>
+    <div class="app-name">NS4 Support+</div>
+    <span class="version-pill">V2.0</span>
+
+    <svg class="wifi-icon" width="56" height="56" viewBox="0 0 24 24" fill="none">
+      <path d="M1 9L3 11.5C7.5 7 16.5 7 21 11.5L23 9C17 3 7 3 1 9Z" stroke="white" stroke-width="1.6" stroke-linejoin="round" opacity="0.5"/>
+      <path d="M5 13L7.2 15.4C9.8 13 14.2 13 16.8 15.4L19 13C15 9.2 9 9.2 5 13Z" stroke="white" stroke-width="1.6" stroke-linejoin="round" opacity="0.75"/>
+      <path d="M9 17L10.6 18.8C11.4 19.6 12.6 19.6 13.4 18.8L15 17C13 15.2 11 15.2 9 17Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+      <line x1="2" y1="2" x2="22" y2="22" stroke="#ff6b6b" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+
+    <h1>Pa gen koneksyon entènèt</h1>
+    <h4> Si se premye fwa ou ap konekte w'ap bezwen entènèt pou w ka telechaje done yo .</h4>
+    <p> Konekte ak entènèt pou jwenn dènye mizajou yo, oswa klike bouton  eseye ankò a.</p>
+
+    <button onclick="location.reload()">Eseye ankò</button>
+  </main>
+
+<script>
+  (function(){
+    var container = document.getElementById('watermark');
+    var rowText = ('Global Plis +∞   ').repeat(6);
+    for (var i = 0; i < 10; i++){
+      var row = document.createElement('div');
+      row.className = 'wm-row';
+      row.textContent = rowText;
+      container.appendChild(row);
+    }
+  })();
+</script>
+
 </body>
 </html>
