@@ -1,0 +1,28 @@
+{
+  "questions": [
+    {
+      "id": "q1",
+      "matiere": "Matematik",
+      "difficulte": "fasil",
+      "question": "Ki valè lim(x -> 0) de sin(x)/x ?",
+      "options": ["0", "1", "Defini", "Enfini"],
+      "reponse": "1"
+    },
+    {
+      "id": "q2",
+      "matiere": "Fizik",
+      "difficulte": "mwayen",
+      "question": "Ki formule pou calculate fòs Newton an?",
+      "options": ["F = m * v", "F = m * a", "F = m / a", "F = a / m"],
+      "reponse": "F = m * a"
+    },
+    {
+      "id": "q3",
+      "matiere": "Chimi",
+      "difficulte": "fasil",
+      "question": "Ki formule chimik dlo?",
+      "options": ["CO2", "H2O", "NaCl", "O2"],
+      "reponse": "H2O"
+    }
+  ]
+}
