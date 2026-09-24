@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#24439a">
+  <title>Pwofil Mwen - NS4 Support+</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+  <style>
+    :root {
+      --primary: #24439a;
+      --primary-dark: #1d3783;
+      --primary-gradient: linear-gradient(135deg, #24439a 0%, #1d3783 100%);
+      --page-bg: #f4f6fa;
+      --white: #ffffff;
+      --text: #1a1a1a;
+      --muted: #666666;
+      --placeholder: #e9ecf3;
+      --gold: #ffc107;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 15px rgba(36, 67, 154, 0.1);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      width: 100%; min-height: 100vh; background: var(--page-bg); color: var(--text);
+      font-family: "Inter", sans-serif; overflow-x: hidden; padding-bottom: 90px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* HEADER */
+    .app-header { width: 100%; background: var(--primary-gradient); color: var(--white); padding: 16px 20px 60px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; box-shadow: 0 4px 20px rgba(36, 67, 154, 0.2); position: relative; }
+    .app-title-row { display: flex; align-items: center; justify-content: space-between; }
+    .app-title { font-family: "Baloo 2", sans-serif; font-size: 20px; font-weight: 800; }
+    .header-button { border: 0; background: rgba(255, 255, 255, 0.15); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); font-size: 16px; }
+    .header-button:active { background: rgba(255, 255, 255, 0.3); }
+    .hamburger-button { flex-direction: column; gap: 5px; border-radius: 12px; }
+    .hamburger-button span { width: 22px; height: 3px; background: white; border-radius: 3px; }
+
+    /* AVATAR (chevouchman ak header, menm mekanism ak home.html) */
+    .avatar-section { text-align: center; transform: translateY(-55px); }
+    .avatar-edit-zone { position: relative; width: 110px; height: 110px; margin: 0 auto; }
+    .avatar-big { width: 110px; height: 110px; border-radius: 50%; overflow: hidden; background: var(--white); border: 4px solid var(--white); box-shadow: var(--shadow-md); }
+    .avatar-big img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-edit-btn { position: absolute; bottom: 0; right: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: white; border: 3px solid var(--page-bg); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+    .avatar-edit-btn:active { transform: scale(0.92); }
+    .avatar-hint { text-align: center; font-size: 12px; color: var(--muted); margin-top: 10px; }
+    #avatar-name { font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 17px; margin-top: 6px; }
+
+    /* CONTENT */
+    .rank-content { max-width: 700px; margin: 0 auto; padding: 0 20px; }
+    .section-title { font-family: "Baloo 2", sans-serif; font-size: 17px; font-weight: 700; margin: 18px 2px 10px; display: flex; align-items: center; gap: 8px; }
+
+    .form-card { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 18px; margin-bottom: 8px; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin: 14px 0 6px; }
+    .form-label:first-child { margin-top: 0; }
+    .form-input { width: 100%; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--placeholder); font-family: "Inter", sans-serif; font-size: 15px; color: var(--text); background: var(--page-bg); outline: none; transition: border-color 0.2s; appearance: none; }
+    .form-input:focus { border-color: var(--primary); }
+    .form-note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .provider-note { font-size: 13px; color: var(--muted); line-height: 1.5; padding: 4px 2px; }
+
+    .btn-primary { width: 100%; margin-top: 18px; padding: 14px; background: var(--primary-gradient); color: white; border: none; border-radius: 12px; font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; transition: transform 0.15s; }
+    .btn-primary:active { transform: scale(0.97); }
+
+    /* TOAST */
+    .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #333; color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10000; display: flex; align-items: center; gap: 10px; }
+    .toast-container.show { transform: translateX(-50%) translateY(0); }
+
+    /* MENU DRAWER */
+    .main-menu { position: fixed; top: 0; right: -320px; width: 280px; height: 100vh; background: var(--white); z-index: 10001; box-shadow: -6px 0 20px rgba(0,0,0,0.1); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
+    .main-menu.open { right: 0; }
+    .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: none; backdrop-filter: blur(2px); }
+    .menu-overlay.show { display: block; }
+    .menu-header { background: var(--primary-gradient); color: white; padding: 40px 20px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .menu-header strong { font-family: "Baloo 2", sans-serif; font-size: 22px; }
+    .close-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .menu-links { padding: 10px 0; overflow-y: auto; }
+    .menu-link { padding: 16px 24px; font-size: 16px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--placeholder); cursor: pointer; }
+    .menu-link:active { background: var(--page-bg); }
+    .menu-link.logout-btn { color: #ff4757; font-weight: 700; }
+
+    /* BOTTOM NAV */
+    .bottom-navigation { position: fixed; left: 0; bottom: 0; width: 100%; height: 75px; background: var(--white); border-top-left-radius: 20px; border-top-right-radius: 20px; display: grid; grid-template-columns: repeat(4, 1fr); box-shadow: 0 -4px 20px rgba(0,0,0,0.06); z-index: 1000; padding: 5px 10px 15px; }
+    .bottom-item { border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--muted); cursor: pointer; position: relative; }
+    .bottom-icon { font-size: 22px; }
+    .bottom-item span { font-size: 12px; font-weight: 600; }
+  </style>
+<script src="nav.js"></script>
+</head>
+<body>
+
+<div id="toast" class="toast-container">
+  <span id="toast-icon">ℹ️</span>
+  <span id="toast-message">Mesaj la ap parèt isit la.</span>
+</div>
+
+<div id="menu-overlay" class="menu-overlay" onclick="toggleMainMenu()"></div>
+
+<header class="app-header">
+  <div class="app-title-row">
+    <button class="header-button" onclick="window.location.href='home.html'" aria-label="Retounen">⬅️</button>
+    <div class="app-title">Pwofil Mwen</div>
+    <button class="header-button hamburger-button" onclick="toggleMainMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div class="avatar-section">
+  <div class="avatar-edit-zone">
+    <div class="avatar-big"><img id="avatar-preview" src="https://ui-avatars.com/api/?name=U&background=24439a&color=fff&bold=true" alt="Pwofil"></div>
+    <button class="avatar-edit-btn" onclick="document.getElementById('avatar-input').click()" type="button" aria-label="Chanje foto">📷</button>
+    <input type="file" id="avatar-input" accept="image/*" hidden>
+  </div>
+  <div id="avatar-name">Itilizatè</div>
+  <div class="avatar-hint" id="avatar-hint">Peze kamera a pou chanje foto pwofil ou</div>
+</div>
+
+<main class="rank-content">
+  <div class="section-title">👤 Idantite</div>
+  <div class="form-card">
+    <label class="form-label">Pseudo</label>
+    <input type="text" id="input-pseudo" class="form-input" maxlength="15" placeholder="Pseudo ou">
+
+    <label class="form-label">Seri (NS4)</label>
+    <select id="input-serie" class="form-input">
+      <option value="">Chwazi seri ou</option>
+      <option value="SMP">SMP — Syans Matematik</option>
+      <option value="SVT">SVT — Syans Lavi & Latè</option>
+      <option value="LLA">LLA — Lèt-Lang</option>
+      <option value="SES">SES — Syans Ekonomik & Sosyal</option>
+    </select>
+
+    <button class="btn-primary" onclick="saveIdentity()" type="button">Sove chanjman yo</button>
+  </div>
+
+  <div class="section-title">🔒 Sekirite</div>
+  <div class="form-card" id="password-card">
+    <div class="provider-note">Ap chaje...</div>
+  </div>
+</main>
+
+<div class="main-menu" id="main-menu">
+  <div class="menu-header">
+    <strong>NS4 Support+</strong>
+    <button class="close-btn" onclick="toggleMainMenu()" type="button">×</button>
+  </div>
+  <div class="menu-links">
+    <div class="menu-link" onclick="window.location.href = 'home.html'">🏠 Akèy</div>
+    <div class="menu-link" onclick="window.location.href = 'quiz.html'">📚 Matyè & Quiz</div>
+    <div class="menu-link" onclick="window.location.href = 'defi.html'">🎯 Defi</div>
+    <div class="menu-link" onclick="window.location.href = 'paramèt.html'">⚙️ Paramèt</div>
+    <div class="menu-link logout-btn" onclick="logout()">🚪 Dekonekte</div>
+  </div>
+</div>
+
+<nav class="bottom-navigation">
+  <button class="bottom-item" onclick="window.location.href = 'home.html'" type="button">
+    <div class="bottom-icon">🏠</div><span>Akèy</span>
+  </button>
+  <button class="bottom-item" onclick="window.location.href = 'ranking.html'" type="button">
+    <div class="bottom-icon">🏆</div><span>Klasman</span>
+  </button>
+  <button class="bottom-item" onclick="window.location.href = 'milti.html'" type="button">
+    <div class="bottom-icon">🎮</div><span>Militjwe</span>
+  </button>
+  <button class="bottom-item" onclick="toggleMainMenu()" type="button">
+    <div class="bottom-icon">☰</div><span>Menu</span>
+  </button>
+</nav>
+
+<script src="pwofil.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(console.error);
+  navigator.serviceWorker.ready.then((reg) => {
+    if (reg.active) reg.active.postMessage({ type: 'check-update' });
+  }).catch(() => {});
+}
+</script>
+</body>
+</html>

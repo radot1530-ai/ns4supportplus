@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#24439a">
+<title>NS4 Support+ | Egzamen & Korije</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<style>
+:root{
+  --primary:#24439a; --primary-dark:#1d3783;
+  --primary-gradient:linear-gradient(135deg,#24439a 0%,#1d3783 100%);
+  --page-bg:#f4f6fa; --white:#fff; --text:#1a1a1a; --muted:#666;
+  --placeholder:#e9ecf3; --green:#12d51c; --gold:#ffc107; --red:#e53935;
+  --shadow-sm:0 2px 8px rgba(0,0,0,.05); --shadow-md:0 4px 15px rgba(36,67,154,.12); --radius-md:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+[hidden]{display:none !important;}
+body{font-family:"Inter",sans-serif;background:var(--page-bg);color:var(--text);padding-bottom:40px;-webkit-tap-highlight-color:transparent;}
+
+/* HEADER */
+.app-header{background:var(--primary-gradient);color:#fff;padding:calc(14px + env(safe-area-inset-top,0px)) 18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom-left-radius:26px;border-bottom-right-radius:26px;box-shadow:0 4px 20px rgba(36,67,154,.2);position:sticky;top:0;z-index:50;}
+.header-left{display:flex;align-items:center;gap:12px;min-width:0;}
+.back-btn{flex-shrink:0;background:rgba(255,255,255,.18);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.header-title{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.header-sub{font-size:11px;opacity:.85;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.coin-pill{flex-shrink:0;background:rgba(255,255,255,.18);color:#fff;padding:7px 12px;border-radius:20px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:5px;}
+
+/* LIST — DASHBOARD ETIDYAN */
+.dash-card{margin:16px;padding:16px;border-radius:20px;background:linear-gradient(135deg,#1d3783 0%,#24439a 60%,#3457b8 100%);color:#fff;box-shadow:0 6px 18px rgba(36,67,154,.28);position:relative;overflow:hidden;}
+.dash-card::after{content:"🎓";position:absolute;right:-6px;bottom:-14px;font-size:84px;opacity:.12;}
+.dash-title{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:16px;margin-bottom:10px;}
+.dash-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.dash-tile{background:rgba(255,255,255,.14);border-radius:12px;padding:10px 4px;text-align:center;}
+.dash-tile b{display:block;font-family:"Baloo 2",sans-serif;font-size:20px;line-height:1.1;}
+.dash-tile span{font-size:10px;opacity:.85;font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+.dash-continue{margin-top:12px;width:100%;border:0;border-radius:12px;padding:11px;background:#fff;color:var(--primary-dark);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;}
+
+.info-card{background:#eef2fb;border-radius:16px;padding:12px 14px;margin:0 16px 14px;display:flex;gap:12px;align-items:flex-start;}
+.info-card .chk{background:var(--primary);color:#fff;width:24px;height:24px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;}
+.info-card p{font-size:12.5px;line-height:1.5;color:#333;}
+
+.filters{display:flex;gap:8px;padding:0 16px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.filter-chip{flex-shrink:0;padding:8px 16px;border-radius:20px;background:#fff;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;box-shadow:var(--shadow-sm);}
+.filter-chip.active{background:var(--primary);color:#fff;}
+
+.exam-list{padding:0 16px;display:flex;flex-direction:column;gap:12px;}
+.exam-card{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:var(--shadow-sm);cursor:pointer;display:flex;align-items:center;gap:12px;transition:.15s;}
+.exam-card:active{transform:scale(.98);}
+.exam-ico{flex-shrink:0;width:46px;height:46px;border-radius:14px;background:#eef2fb;display:flex;align-items:center;justify-content:center;font-size:24px;}
+.exam-info{flex:1;min-width:0;}
+.exam-info b{font-family:"Baloo 2",sans-serif;font-size:15.5px;display:block;color:var(--primary-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.exam-info span.ses{font-size:12px;color:var(--muted);}
+.exam-badges{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;}
+.badge-video{background:#fdecea;color:var(--red);}
+.badge-premium{background:#fff8e6;color:#5a4200;}
+.badge-text{background:#e8f8ee;color:#1e9e57;}
+.exam-prog{height:6px;background:var(--placeholder);border-radius:6px;margin-top:8px;overflow:hidden;}
+.exam-prog i{display:block;height:100%;background:linear-gradient(90deg,#12d51c,#00e676);border-radius:6px;}
+.exam-arrow{font-size:20px;color:var(--primary);}
+
+/* DETAIL */
+.detail-view{display:none;padding:16px;}
+.detail-view.active{display:block;}
+.hero{background:#fff;border-radius:20px;padding:16px;box-shadow:var(--shadow-md);margin-bottom:14px;display:flex;gap:14px;align-items:center;}
+.hero .exam-ico{width:56px;height:56px;font-size:30px;border-radius:16px;}
+.hero h2{font-family:"Baloo 2",sans-serif;font-size:18px;color:var(--primary-dark);line-height:1.2;}
+.hero p{font-size:12.5px;color:var(--muted);margin-top:2px;}
+.hero .exam-badges{margin-top:8px;}
+
+.tabs{display:flex;background:#fff;border-radius:14px;padding:5px;box-shadow:var(--shadow-sm);margin-bottom:16px;position:sticky;top:calc(78px + env(safe-area-inset-top,0px));z-index:40;}
+.tab-btn{flex:1;text-align:center;padding:11px;border-radius:10px;font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer;}
+.tab-btn.active{background:var(--primary);color:#fff;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+.panel-header{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15px;color:var(--primary-dark);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.image-gallery{display:flex;flex-direction:column;gap:14px;}
+.image-gallery img{width:100%;border-radius:14px;box-shadow:var(--shadow-sm);display:block;background:#e9ecf3;min-height:120px;cursor:zoom-in;}
+.page-label{font-size:11px;color:var(--muted);text-align:center;margin-top:-6px;}
+
+/* KORIJE — DASHBOARD */
+.cor-dash{background:#fff;border-radius:20px;padding:16px;box-shadow:var(--shadow-md);margin-bottom:14px;}
+.cd-top{display:flex;align-items:center;gap:14px;}
+.ring-wrap{position:relative;width:74px;height:74px;flex-shrink:0;}
+.ring{width:74px;height:74px;transform:rotate(-90deg);}
+.ring circle{fill:none;stroke-width:4.5;}
+.ring .bg{stroke:#e9ecf3;}
+.ring .fg{stroke:url(#ringGrad);stroke-linecap:round;transition:stroke-dashoffset .6s ease;}
+.ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:17px;color:var(--primary-dark);}
+.cd-title{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:16px;color:var(--primary-dark);}
+.cd-sub{font-size:12.5px;color:var(--muted);margin-top:1px;}
+.cd-msg{font-size:12.5px;font-weight:700;color:#1e9e57;margin-top:6px;}
+.cd-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;}
+.cd-tile{background:#f4f6fa;border-radius:12px;padding:9px 2px;text-align:center;}
+.cd-tile b{display:block;font-family:"Baloo 2",sans-serif;font-size:18px;color:var(--primary-dark);line-height:1.1;}
+.cd-tile span{font-size:9.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+.cd-tools{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.cd-tools button{flex:1;min-width:110px;border:0;border-radius:11px;padding:10px 8px;font-size:12px;font-weight:700;cursor:pointer;background:#eef2fb;color:var(--primary-dark);font-family:inherit;}
+.cd-tools button.on{background:var(--primary);color:#fff;}
+.cor.only-review .cor-q:not(.review){display:none;}
+
+details.img-corr{background:#fff;border-radius:16px;box-shadow:var(--shadow-sm);padding:12px 14px;margin:14px 0;}
+details.img-corr summary{font-weight:700;color:var(--primary-dark);cursor:pointer;font-size:14px;}
+details.img-corr .image-gallery{margin-top:12px;}
+.video-block{margin-top:16px;}
+.video-block iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:14px;background:#000;}
+
+.state-msg{text-align:center;padding:40px 20px;color:var(--muted);font-size:13.5px;line-height:1.5;}
+.state-msg.err{color:#a33;background:#fff;border-radius:14px;box-shadow:var(--shadow-sm);}
+.premium-lock{background:#fff;border-radius:16px;padding:30px 20px;text-align:center;box-shadow:var(--shadow-sm);}
+.premium-lock .ic{font-size:38px;margin-bottom:8px;}
+.premium-lock p{font-size:13px;color:var(--muted);margin-bottom:16px;}
+.note-btn{border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-lock{background:var(--gold);color:#5a4200;}
+
+/* modals */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.modal-overlay.show{display:flex;}
+.unlock-card{background:#fff;border-radius:22px;padding:26px 22px;width:100%;max-width:340px;text-align:center;}
+.unlock-card .ic{font-size:44px;margin-bottom:8px;}
+.unlock-card h3{font-family:"Baloo 2",sans-serif;font-size:19px;margin-bottom:6px;color:var(--primary-dark);}
+.unlock-card p{font-size:13px;color:var(--muted);margin-bottom:18px;}
+.unlock-opt{display:block;width:100%;padding:13px;border-radius:12px;border:none;font-weight:700;font-size:14px;margin-bottom:10px;cursor:pointer;font-family:inherit;}
+.opt-coin{background:var(--primary);color:#fff;}
+.opt-ad{background:#eef2fb;color:var(--primary-dark);}
+.opt-pro{background:var(--gold);color:#5a4200;}
+.opt-cancel{background:transparent;color:var(--muted);font-weight:600;}
+#lightbox{background:rgba(0,0,0,.92);padding:0;}
+#lightbox img{max-width:100%;max-height:100%;object-fit:contain;}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-100px);background:#333;color:#fff;padding:11px 20px;border-radius:30px;font-size:13.5px;font-weight:500;box-shadow:0 4px 15px rgba(0,0,0,.2);transition:.35s cubic-bezier(.175,.885,.32,1.275);z-index:2000;text-align:center;max-width:90%;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+<script src="ads.js"></script>
+<script src="nav.js"></script>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<header class="app-header">
+  <div class="header-left">
+    <button class="back-btn" onclick="handleBack()" aria-label="Retounen">←</button>
+    <div style="min-width:0">
+      <div class="header-title" id="pageTitle">Egzamen & Korije</div>
+      <div class="header-sub" id="pageSub">Ansyen egzamen ofisyèl</div>
+    </div>
+  </div>
+  <div class="coin-pill">🪙 <span id="coinCount">0</span></div>
+</header>
+
+<!-- LIS -->
+<div id="listView">
+  <div class="dash-card" id="dashCard"></div>
+  <div class="info-card">
+    <div class="chk">📝</div>
+    <p>Sijè ak korije ansyen egzamen ofisyèl yo, byen separe. Nan korije a ou jwenn etap yo, repons yo, ak yon dashboard pou swiv sa ou konprann.</p>
+  </div>
+  <div class="filters" id="subjectFilters"></div>
+  <div id="examList" class="exam-list"><div class="state-msg">Ap chaje egzamen yo...</div></div>
+</div>
+
+<!-- DETAY -->
+<div id="detailView" class="detail-view">
+  <div class="hero" id="examHero"></div>
+
+  <div class="tabs">
+    <div class="tab-btn active" id="tabSujet" onclick="switchTab('sujet')">📄 Sijè</div>
+    <div class="tab-btn" id="tabCorrection" onclick="switchTab('correction')">✅ Korije</div>
+  </div>
+
+  <div id="panelSujet" class="tab-panel active">
+    <div class="panel-header">📄 Sijè a — li l byen anvan ou gade korije a</div>
+    <div id="sujetImages" class="image-gallery"></div>
+  </div>
+
+  <div id="panelCorrection" class="tab-panel">
+    <div id="correctionContent"></div>
+  </div>
+</div>
+
+<!-- Zoom imaj -->
+<div id="lightbox" class="modal-overlay" onclick="closeLightbox()"><img id="lightboxImg" alt=""></div>
+
+<!-- Deblokaj -->
+<div id="unlockOverlay" class="modal-overlay" onclick="if(event.target===this)closeUnlock()">
+  <div class="unlock-card">
+    <div class="ic">🔒</div>
+    <h3>Korije Premium</h3>
+    <p>Korije egzamen sa a fè pati kontni PRO. Chwazi yon opsyon pou debloke l:</p>
+    <button class="unlock-opt opt-coin" id="btnCoinUnlock" onclick="doUnlockCoins()">Peye 15 🪙 Pyès</button>
+    <button class="unlock-opt opt-ad" onclick="doUnlockAd()">📺 Gade yon Piblisite</button>
+    <button class="unlock-opt opt-pro" onclick="window.location.href='home.html'">👑 Vin PRO (Ilimite)</button>
+    <button class="unlock-opt opt-cancel" onclick="closeUnlock()">Anile</button>
+  </div>
+</div>
+
+<!-- Degradan SVG pou ti wonn pwogrè a -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#12d51c"/><stop offset="100%" stop-color="#00c2a8"/></linearGradient>
+</defs></svg>
+
+<script src="stats.js"></script>
+<script src="ns4-math.js"></script>
+<script src="ns4-correction.js"></script>
+<script src="ns4-content.js"></script>
+<script>
+/* ================= FIREBASE ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyDxN2jYclFAeSh9tMvkoeZCTsFvWNQYOzA",
+  authDomain: "ns4supportplus.firebaseapp.com",
+  projectId: "ns4supportplus",
+  storageBucket: "ns4supportplus.firebasestorage.app",
+  messagingSenderId: "1072291248908",
+  appId: "1:1072291248908:web:711d01129b833847c5a729",
+  measurementId: "G-DEYNQ8GQ9B"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ================= MODÈL DONE =================
+   examens/{examId} = {
+     matiere: "Mathématiques",  annee: "2025",  session: "Juin 2025",
+     sujetImages: [url, ...],  correctionImages: [url, ...],      (opsyonèl)
+     correctionText: "# Egzèsis 1 ...",                            (korije an tèks — gade ns4-correction.js)
+     videoId: "dQw4w9WgXcQ",  premium: true/false,  unlockCost: 15
+   }
+   (Admin an ekri egzakteman la — admin.js)
+================================================= */
+
+const $ = (id) => document.getElementById(id);
+let ALL_EXAMS = {};
+let currentFilter = "Tout";
+let currentExamId = null;
+let pendingUnlockId = null;
+let prog = { u: {}, r: {}, total: 0, ts: 0 };
+let hideAnswers = false;
+let onlyReview = false;
+let started = false;
+let lastExamJSON = "";
+
+/* ---------- Helpers ---------- */
+function safeParse(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+function safeSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* kach plen */ } }
+function withTimeout(p, ms) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error("timeout")), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+function escapeHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function safeUrl(u) { u = String(u || "").trim(); return /^(https?:\/\/|\/|\.\/|data:image\/)/i.test(u) ? u : ""; }
+function toArray(v) {
+  if (!v) return [];
+  if (Array.isArray(v)) return v.filter(Boolean);
+  if (typeof v === "object") return Object.keys(v).sort(function (a, b) { return a - b; }).map(function (k) { return v[k]; }).filter(Boolean);
+  return [String(v)];
+}
+function youtubeId(v) {
+  v = String(v || "").trim();
+  if (!v) return "";
+  if (/^[A-Za-z0-9_-]{11}$/.test(v)) return v;
+  const m = v.match(/(?:youtu\.be\/|v=|\/embed\/|\/shorts\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : "";
+}
+function describeError(err) {
+  const code = (err && (err.code || err.message)) || "erè enkoni";
+  if (/permission/i.test(code)) return "PERMISSION_DENIED — règ Firebase yo pa pèmèt lekti /examens (gade firebase-rules-ajoute.json).";
+  return String(code);
+}
+
+let toastT;
+function showToast(msg) {
+  const t = $("toast");
+  t.innerText = msg; t.classList.add("show");
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2800);
+}
+function refreshCoinDisplay() { $("coinCount").innerText = NS4Content.getUser().coins || 0; }
+
+const ICONS = [[/philo/i, "🧠"], [/math/i, "📐"], [/phys/i, "⚛️"], [/chim/i, "🧪"], [/biolog|géolog|geolog/i, "🌱"], [/angl|engl/i, "🇬🇧"], [/espagn|panyol|spanish/i, "🇪🇸"], [/kreyòl|creole|créole|kreyol/i, "🗣️"], [/écon|econ/i, "💰"], [/art/i, "🎨"], [/social/i, "🌍"]];
+function iconFor(m) { for (let i = 0; i < ICONS.length; i++) if (ICONS[i][0].test(m || "")) return ICONS[i][1]; return "📝"; }
+
+/* Nòmalize done sèvè a (aksepte ansyen non chan yo tou) */
+function normalize(id, e) {
+  const n = {};
+  n.id = id;
+  n.matiere = e.matiere || e.subject || "Egzamen";
+  n.annee = String(e.annee || e.year || "");
+  n.session = e.session || e.title || "";
+  n.sujetImages = toArray(e.sujetImages || e.examImages).map(safeUrl).filter(Boolean);
+  n.correctionImages = toArray(e.correctionImages).map(safeUrl).filter(Boolean);
+  n.correctionText = typeof e.correctionText === "string" ? e.correctionText : "";
+  n.videoId = youtubeId(e.videoId || e.videoUrl);
+  n.premium = e.premium === true || e.premium === "true";
+  n.unlockCost = e.unlockCost == null ? 15 : Math.max(0, Number(e.unlockCost) || 0);
+  return n;
+}
+const hasText = (e) => (e.correctionText || "").trim().length > 0;
+
+/* ---------- Pwogrè etidyan (lokal + Firebase) ---------- */
+const progKey = (id) => "ns4_examprog_" + (NS4Content.uid() || "guest") + "_" + id;
+function loadProg(id) {
+  const p = safeParse(progKey(id));
+  return p && p.u ? { u: p.u || {}, r: p.r || {}, total: p.total || 0, ts: p.ts || 0 } : { u: {}, r: {}, total: 0, ts: 0 };
+}
+function countTrue(o) { return Object.keys(o || {}).filter((k) => o[k]).length; }
+function saveProg() {
+  prog.ts = Date.now();
+  safeSet(progKey(currentExamId), prog);
+  const uid = NS4Content.uid();
+  if (uid) {
+    const clean = { u: {}, r: {}, total: prog.total, ts: prog.ts };
+    Object.keys(prog.u).forEach((k) => { if (prog.u[k]) clean.u[k] = true; });
+    Object.keys(prog.r).forEach((k) => { if (prog.r[k]) clean.r[k] = true; });
+    db.ref("users/" + uid + "/examProgress/" + currentExamId).set(clean).catch(() => {});
+  }
+}
+function syncProgFromServer(id) {
+  const uid = NS4Content.uid();
+  if (!uid) return Promise.resolve();
+  return withTimeout(db.ref("users/" + uid + "/examProgress/" + id).once("value"), 5000).then((snap) => {
+    const v = snap.val();
+    if (v && (v.ts || 0) > (prog.ts || 0)) {
+      prog = { u: v.u || {}, r: v.r || {}, total: v.total || prog.total, ts: v.ts };
+      safeSet(progKey(id), prog);
+    }
+  }).catch(() => {});
+}
+
+/* ---------- Chajman lis egzamen ---------- */
+function loadExams() {
+  const cached = safeParse("ns4_exams_cache");
+  if (cached && typeof cached === "object") {
+    ALL_EXAMS = cached;
+    renderDash(); renderFilters(); renderList();
+    loadDailyExamWidget(); // 🔵 ajouté
+  }
+
+  let answered = false;
+  const timer = setTimeout(() => {
+    if (!answered && !Object.keys(ALL_EXAMS).length) {
+      $("examList").innerHTML = '<div class="state-msg err">Pa gen koneksyon epi pa gen okenn egzamen ki sove sou telefòn nan ankò.</div>';
+    }
+  }, 8000);
+
+    db.ref("examens").on("value", (snap) => {
+    answered = true; clearTimeout(timer);
+    const all = {};
+    snap.forEach((child) => { all[child.key] = normalize(child.key, child.val() || {}); });
+    ALL_EXAMS = all;
+    safeSet("ns4_exams_cache", all);
+    renderDash(); renderFilters(); renderList();
+    loadDailyExamWidget();
+
+    // Si yon egzamen louvri epi li chanje sou sèvè a, rafrechi l (sèlman si kontni an chanje)
+    if (currentExamId && ALL_EXAMS[currentExamId]) {
+      const j = JSON.stringify(ALL_EXAMS[currentExamId]);
+      if (j !== lastExamJSON) { lastExamJSON = j; paintDetail(ALL_EXAMS[currentExamId]); }
+    }
+  }, (err) => {
+    answered = true; clearTimeout(timer);
+    console.error("examens:", err);
+    if (!Object.keys(ALL_EXAMS).length) {
+      $("examList").innerHTML = '<div class="state-msg err">Nou pa t ka chaje egzamen yo.<br><small>' + escapeHtml(describeError(err)) + "</small></div>";
+    } else {
+      showToast("Offline — dènye egzamen ki sove yo.");
+    }
+  });
+}
+
+/* ---------- DASHBOARD LIS ---------- */
+function renderDash() {
+  const ids = Object.keys(ALL_EXAMS);
+  let started = 0, done = 0, sum = 0;
+  ids.forEach((id) => {
+    const p = loadProg(id);
+    if (p.total > 0) {
+      const c = countTrue(p.u);
+      if (c > 0) { started++; sum += Math.round(c * 100 / p.total); }
+      if (c >= p.total) done++;
+    }
+  });
+  const avg = started ? Math.round(sum / started) : 0;
+  const last = safeParse("ns4_exam_last");
+  const lastEx = last && ALL_EXAMS[last];
+
+  $("dashCard").innerHTML =
+    '<div class="dash-title">📊 Dashboard etid ou</div>' +
+    '<div class="dash-tiles">' +
+      '<div class="dash-tile"><b>' + ids.length + "</b><span>Egzamen</span></div>" +
+      '<div class="dash-tile"><b>' + started + "</b><span>Kòmanse</span></div>" +
+      '<div class="dash-tile"><b>' + done + "</b><span>Fini</span></div>" +
+      '<div class="dash-tile"><b>' + avg + "%</b><span>Mwayèn</span></div>" +
+    "</div>" +
+    (lastEx ? '<button class="dash-continue" onclick="openExam(\'' + escapeHtml(last) + '\')">▶ Kontinye: ' + escapeHtml(lastEx.matiere + " — " + lastEx.annee) + "</button>" : "");
+}
+
+function renderFilters() {
+  const set = {};
+  Object.keys(ALL_EXAMS).forEach((id) => { if (ALL_EXAMS[id].matiere) set[ALL_EXAMS[id].matiere] = 1; });
+  const subjects = ["Tout"].concat(Object.keys(set).sort());
+  if (subjects.indexOf(currentFilter) < 0) currentFilter = "Tout";
+  $("subjectFilters").innerHTML = subjects.map((s) =>
+    '<div class="filter-chip ' + (s === currentFilter ? "active" : "") + '" data-f="' + escapeHtml(s) + '">' + escapeHtml(s) + "</div>").join("");
+}
+
+function renderList() {
+  const container = $("examList");
+  const entries = Object.keys(ALL_EXAMS).map((id) => ALL_EXAMS[id]).filter((e) => currentFilter === "Tout" || e.matiere === currentFilter);
+  if (!entries.length) {
+    container.innerHTML = '<div class="state-msg">' + (Object.keys(ALL_EXAMS).length ? "Pa gen egzamen pou kategori sa a pou kounye a." : "Poko gen okenn egzamen. Admin lan ap ajoute yo talè konsa.") + "</div>";
+    return;
+  }
+  entries.sort((a, b) => (b.annee || "").localeCompare(a.annee || "") || (a.matiere || "").localeCompare(b.matiere || ""));
+
+  container.innerHTML = entries.map((e) => {
+    const p = loadProg(e.id);
+    const pct = p.total ? Math.min(100, Math.round(countTrue(p.u) * 100 / p.total)) : 0;
+    return '<div class="exam-card" data-id="' + escapeHtml(e.id) + '">' +
+      '<div class="exam-ico">' + iconFor(e.matiere) + "</div>" +
+      '<div class="exam-info"><b>' + escapeHtml(e.matiere) + (e.annee ? " — " + escapeHtml(e.annee) : "") + "</b>" +
+        '<span class="ses">' + escapeHtml(e.session) + "</span>" +
+        '<div class="exam-badges">' +
+          (hasText(e) ? '<span class="badge badge-text">📝 Korije tèks</span>' : "") +
+          (e.videoId ? '<span class="badge badge-video">▶ Videyo</span>' : "") +
+          (e.premium ? '<span class="badge badge-premium">🔒 Premium</span>' : "") +
+        "</div>" +
+        (pct > 0 ? '<div class="exam-prog"><i style="width:' + pct + '%"></i></div>' : "") +
+      "</div>" +
+      '<div class="exam-arrow">→</div></div>';
+  }).join("");
+}
+
+$("subjectFilters").addEventListener("click", (ev) => {
+  const c = ev.target.closest(".filter-chip");
+  if (!c) return;
+  currentFilter = c.getAttribute("data-f");
+  renderFilters(); renderList();
+});
+$("examList").addEventListener("click", (ev) => {
+  const c = ev.target.closest(".exam-card");
+  if (c) openExam(c.getAttribute("data-id"));
+});
+
+/* ---------- DETAY EGZAMEN ---------- */
+function openExam(id) {
+  const e = ALL_EXAMS[id];
+  if (!e) return;
+  currentExamId = id;
+  safeSet("ns4_exam_last", id);
+  lastExamJSON = JSON.stringify(e);
+  onlyReview = false;
+  $("listView").hidden = true;
+  $("detailView").classList.add("active");
+  window.scrollTo(0, 0);
+  switchTab("sujet");
+
+  prog = loadProg(id);
+  paintDetail(e);
+  syncProgFromServer(id).then(() => { if (currentExamId === id && ALL_EXAMS[id]) paintCorrection(ALL_EXAMS[id]); });
+}
+
+function paintDetail(e) {
+  $("pageTitle").innerText = e.matiere + (e.annee ? " — " + e.annee : "");
+  $("pageSub").innerText = e.session || "Egzamen ofisyèl";
+
+  $("examHero").innerHTML =
+    '<div class="exam-ico">' + iconFor(e.matiere) + "</div>" +
+    "<div><h2>" + escapeHtml(e.matiere) + (e.annee ? " — " + escapeHtml(e.annee) : "") + "</h2>" +
+    "<p>" + escapeHtml(e.session || "Egzamen ofisyèl") + "</p>" +
+    '<div class="exam-badges">' +
+      (e.sujetImages.length ? '<span class="badge badge-text">📄 ' + e.sujetImages.length + " paj sijè</span>" : "") +
+      (hasText(e) ? '<span class="badge badge-text">📝 Korije tèks</span>' : "") +
+      (e.videoId ? '<span class="badge badge-video">▶ Videyo</span>' : "") +
+      (e.premium ? '<span class="badge badge-premium">🔒 Korije premium</span>' : "") +
+    "</div></div>";
+
+  $("sujetImages").innerHTML = e.sujetImages.length
+    ? e.sujetImages.map((url, i) =>
+        '<img src="' + escapeHtml(url) + '" alt="Sijè paj ' + (i + 1) + '" loading="lazy" data-zoom="1">' +
+        '<div class="page-label">Paj ' + (i + 1) + " / " + e.sujetImages.length + "</div>").join("")
+    : '<div class="state-msg">Imaj sijè a poko disponib.</div>';
+
+  paintCorrection(e);
+}
+
+/* ---------- KORIJE ---------- */
+function isLocked(e) { return e.premium && !NS4Content.isPro() && !NS4Content.isUnlocked("exam", e.id); }
+
+function paintCorrection(e) {
+  const el = $("correctionContent");
+
+  if (isLocked(e)) {
+    el.innerHTML = '<div class="premium-lock"><div class="ic">🔒</div><p>Korije sa a se kontni PRO. Debloke l pou wè etap yo ak repons yo.</p>' +
+      '<button class="note-btn btn-lock" onclick="openUnlock(\'' + escapeHtml(e.id) + '\')">Debloke Korije a</button></div>';
+    return;
+  }
+
+  const withText = hasText(e);
+  const nImg = e.correctionImages.length;
+  if (!withText && !nImg && !e.videoId) {
+    el.innerHTML = '<div class="state-msg">Korije a poko ajoute.</div>';
+    return;
+  }
+
+  let html = "";
+  if (withText) {
+    NS4Correction.injectCSS();
+    const parsed = NS4Correction.parse(e.correctionText);
+    prog.total = parsed.items.length;
+    html += dashboardHTML(parsed);
+    html += tocHTML(parsed);
+    html += NS4Correction.render(parsed, { interactive: true, idPrefix: "cor" });
+    el.__parsed = parsed;
+  }
+
+  if (nImg) {
+    html += '<details class="img-corr"' + (withText ? "" : " open") + "><summary>🖼 Korije an imaj (" + nImg + " paj)</summary>" +
+      '<div class="image-gallery">' + e.correctionImages.map((url, i) =>
+        '<img src="' + escapeHtml(url) + '" alt="Korije paj ' + (i + 1) + '" loading="lazy" data-zoom="1"><div class="page-label">Paj ' + (i + 1) + " / " + nImg + "</div>").join("") + "</div></details>";
+  }
+  if (e.videoId) {
+    html += '<div class="video-block"><div class="panel-header">▶ Videyo Eksplikasyon</div>' +
+      '<iframe src="https://www.youtube.com/embed/' + e.videoId + '?rel=0" allowfullscreen></iframe></div>';
+  }
+
+  el.innerHTML = html;
+  applyModes();
+  applyProgressUI();
+  NS4Math.processDom(el);
+}
+
+function ringSVG() {
+  return '<svg class="ring" viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="18"/>' +
+         '<circle class="fg" id="ringFg" cx="22" cy="22" r="18" stroke-dasharray="113.1" stroke-dashoffset="113.1"/></svg>';
+}
+
+function dashboardHTML(p) {
+  const s = p.stats;
+  return '<div class="cor-dash">' +
+    '<div class="cd-top"><div class="ring-wrap">' + ringSVG() + '<div class="ring-pct" id="ringPct">0%</div></div>' +
+      '<div><div class="cd-title">Pwogrè korije a</div><div class="cd-sub" id="cdSub"></div><div class="cd-msg" id="cdMsg"></div></div></div>' +
+    '<div class="cd-tiles">' +
+      '<div class="cd-tile"><b>' + s.exercises + "</b><span>Egzèsis</span></div>" +
+      '<div class="cd-tile"><b>' + (s.questions || p.items.length) + "</b><span>Kesyon</span></div>" +
+      '<div class="cd-tile"><b>' + s.answers + "</b><span>Repons</span></div>" +
+      '<div class="cd-tile"><b>~' + s.minutes + "'</b><span>Lekti</span></div>" +
+    "</div>" +
+    '<div class="cd-tools">' +
+      '<button type="button" id="btnHide" data-tool="hide">👁 Kache repons yo</button>' +
+      '<button type="button" id="btnRev" data-tool="rev">🔁 Pou revize (0)</button>' +
+      '<button type="button" data-tool="reset">↺ Rekòmanse</button>' +
+    "</div></div>";
+}
+
+function tocHTML(p) {
+  if (p.exercises.length < 2) return "";
+  return '<nav class="cor-toc">' + p.exercises.map((e, i) =>
+    '<button type="button" data-ex="' + i + '" id="toc-' + i + '">Egz ' + (i + 1) + "</button>").join("") + "</nav>";
+}
+
+function applyModes() {
+  hideAnswers = safeParse("ns4_exam_hide") === true;
+  const root = document.querySelector("#correctionContent .cor");
+  if (root) { root.classList.toggle("cor-hide", hideAnswers); root.classList.toggle("only-review", onlyReview); }
+}
+
+function applyProgressUI() {
+  const el = $("correctionContent");
+  const parsed = el.__parsed;
+  if (!parsed) return;
+  const total = parsed.items.length;
+  const done = parsed.items.filter((k) => prog.u[k]).length;
+  const rev = parsed.items.filter((k) => prog.r[k]).length;
+  const pct = total ? Math.round(done * 100 / total) : 0;
+
+  el.querySelectorAll(".cor-q").forEach((q) => {
+    const k = q.getAttribute("data-key");
+    q.classList.toggle("understood", !!prog.u[k]);
+    q.classList.toggle("review", !!prog.r[k]);
+  });
+  el.querySelectorAll(".cor-actions button").forEach((b) => {
+    const k = b.getAttribute("data-key"), a = b.getAttribute("data-act");
+    b.classList.toggle("on-ok", a === "ok" && !!prog.u[k]);
+    b.classList.toggle("on-rev", a === "rev" && !!prog.r[k]);
+  });
+  parsed.exercises.forEach((ex, i) => {
+    const keys = parsed.items.filter((k) => k === String(i) || k.indexOf(i + "_") === 0);
+    const chip = $("toc-" + i);
+    if (chip) chip.classList.toggle("done", keys.length > 0 && keys.every((k) => prog.u[k]));
+  });
+
+  const fg = $("ringFg");
+  if (fg) fg.setAttribute("stroke-dashoffset", (113.1 * (1 - pct / 100)).toFixed(1));
+  $("ringPct").innerText = pct + "%";
+  $("cdSub").innerText = done + " / " + total + " kesyon konprann";
+  $("cdMsg").innerText = pct === 0 ? "Kòmanse ak Egzèsis 1 💪" : pct < 50 ? "Kontinye, ou sou bon chemen!" : pct < 100 ? "Prèske! Ou prèske fini 🔥" : "Bravo! Ou konprann tout korije a 🎉";
+  $("btnRev").innerText = "🔁 Pou revize (" + rev + ")";
+  $("btnRev").classList.toggle("on", onlyReview);
+  $("btnHide").classList.toggle("on", hideAnswers);
+  $("btnHide").innerText = hideAnswers ? "👁 Montre repons yo" : "👁 Kache repons yo";
+}
+
+$("correctionContent").addEventListener("click", (ev) => {
+  const t = ev.target;
+  const act = t.closest("[data-act]");
+  if (act) {
+    const k = act.getAttribute("data-key"), a = act.getAttribute("data-act");
+    if (a === "ok") { prog.u[k] = !prog.u[k]; if (prog.u[k]) prog.r[k] = false; }
+    else { prog.r[k] = !prog.r[k]; if (prog.r[k]) prog.u[k] = false; }
+    saveProg(); applyProgressUI(); renderDash();
+    return;
+  }
+  const tool = t.closest("[data-tool]");
+  if (tool) {
+    const w = tool.getAttribute("data-tool");
+    if (w === "hide") {
+      hideAnswers = !hideAnswers; safeSet("ns4_exam_hide", hideAnswers);
+      document.querySelectorAll("#correctionContent .cor-answer").forEach((a) => a.classList.remove("revealed"));
+      applyModes(); applyProgressUI();
+    } else if (w === "rev") {
+      const parsed = $("correctionContent").__parsed;
+      const n = parsed ? parsed.items.filter((k) => prog.r[k]).length : 0;
+      if (!onlyReview && !n) { showToast("Pa gen kesyon ki make pou revize."); return; }
+      onlyReview = !onlyReview; applyModes(); applyProgressUI();
+    } else if (w === "reset") {
+      if (!confirm("Efase tout pwogrè ou sou korije sa a?")) return;
+      prog.u = {}; prog.r = {}; saveProg(); applyProgressUI(); renderDash();
+    }
+    return;
+  }
+  const ans = t.closest(".cor-answer");
+  if (ans && hideAnswers) { ans.classList.toggle("revealed"); return; }
+  const toc = t.closest("[data-ex]");
+  if (toc) {
+    const sec = $("cor-ex-" + toc.getAttribute("data-ex"));
+    if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  const img = t.closest("img[data-zoom]");
+  if (img) openLightbox(img.src);
+});
+$("sujetImages").addEventListener("click", (ev) => { const img = ev.target.closest("img[data-zoom]"); if (img) openLightbox(img.src); });
+
+function openLightbox(src) { $("lightboxImg").src = src; $("lightbox").classList.add("show"); }
+function closeLightbox() { $("lightbox").classList.remove("show"); $("lightboxImg").src = ""; }
+
+function switchTab(tab) {
+  $("tabSujet").classList.toggle("active", tab === "sujet");
+  $("tabCorrection").classList.toggle("active", tab === "correction");
+  $("panelSujet").classList.toggle("active", tab === "sujet");
+  $("panelCorrection").classList.toggle("active", tab === "correction");
+}
+
+function handleBack() {
+  if ($("lightbox").classList.contains("show")) { closeLightbox(); return; }
+  if ($("detailView").classList.contains("active")) {
+    $("detailView").classList.remove("active");
+    $("listView").hidden = false;
+    $("pageTitle").innerText = "Egzamen & Korije";
+    $("pageSub").innerText = "Ansyen egzamen ofisyèl";
+    currentExamId = null;
+    renderDash(); renderList();
+  } else {
+    window.location.href = "home.html";
+  }
+}
+
+/* ---------- DEBLOKAJ ---------- */
+function openUnlock(id) {
+  const e = ALL_EXAMS[id];
+  if (!e) return;
+  pendingUnlockId = id;
+  $("btnCoinUnlock").innerText = e.unlockCost > 0 ? "Peye " + e.unlockCost + " 🪙 Pyès" : "Debloke gratis";
+  $("unlockOverlay").classList.add("show");
+}
+function closeUnlock() { $("unlockOverlay").classList.remove("show"); pendingUnlockId = null; }
+
+function afterUnlock(e) {
+  closeUnlock();
+  refreshCoinDisplay();
+  if (currentExamId === e.id) paintCorrection(e);
+}
+function doUnlockCoins() {
+  const e = ALL_EXAMS[pendingUnlockId];
+  if (!e) return;
+  NS4Content.unlockWithCoins("exam", e.id, e.unlockCost).then((r) => {
+    if (r === "ok") { showToast("Korije a debloke ✅"); afterUnlock(e); }
+    else if (r === "coins") showToast("Ou pa gen ase pyès sou kont ou. Ou ka gade yon piblisite pito.");
+    else if (r === "offline") showToast("Pou peye ak pyès, ou dwe konekte sou entènèt.");
+    else showToast("Erè. Eseye ankò.");
+  });
+}
+function doUnlockAd() {
+  const e = ALL_EXAMS[pendingUnlockId];
+  if (!e) return;
+  showToast("Piblisite ap chaje...");
+  NS4Content.unlockByAd("exam", e.id).then((ok) => {
+    if (ok) { showToast("Mèsi! Korije a debloke 🎉"); afterUnlock(e); }
+    else showToast("Piblisite a pa fini. Pa gen deblokaj.");
+  });
+}
+
+/* ---------- DEMARE ---------- */
+window.addEventListener("load", () => {
+  refreshCoinDisplay();
+  firebase.auth().onAuthStateChanged((user) => {
+    if (!user) { window.location.href = "intro.html"; return; }
+    if (started) return;
+    started = true;
+    NS4Content.init(() => { refreshCoinDisplay(); if (currentExamId && ALL_EXAMS[currentExamId]) paintCorrection(ALL_EXAMS[currentExamId]); });
+    loadExams();
+  });
+});
+</script>
+<script>
+// 📺 Pub obligatoire (FREE) avant d'ouvrir un examen / sa correction — PRO passe direct
+(function () {
+  const _open = openExam;
+  openExam = function (id) { NS4Ads.requireNoteAccess("exam", () => _open(id)); };
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(console.error);
+  navigator.serviceWorker.ready.then((reg) => {
+    if (reg.active) reg.active.postMessage({ type: 'check-update' });
+  }).catch(() => {});
+}
+</script>
+</body>
+</html>

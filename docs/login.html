@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konekte - NS4 Support+</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f4f6fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+    .auth-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(36,67,154,0.1); width: 100%; max-width: 400px; }
+    h2 { color: #24439a; text-align: center; margin-bottom: 25px; }
+    .input-group { margin-bottom: 15px; position: relative; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 5px; }
+    input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; box-sizing: border-box; transition: 0.3s; }
+    input:focus { border-color: #24439a; outline: none; }
+    .forgot-pass { position: absolute; right: 0; top: 0; font-size: 12px; color: #24439a; cursor: pointer; text-decoration: none; font-weight: 600; }
+    .forgot-pass:hover { text-decoration: underline; }
+    .btn-submit { width: 100%; padding: 14px; background: #24439a; color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+    .btn-submit:disabled { background: #95a5a6; cursor: not-allowed; }
+    .btn-google { width: 100%; padding: 14px; background: white; color: #333; border: 1px solid #ddd; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+    .btn-google:hover { background: #f9f9f9; }
+    .btn-google img { width: 20px; }
+    .divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: #aaa; font-size: 12px; }
+    .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #ddd; }
+    .divider:not(:empty)::before { margin-right: .25em; }
+    .divider:not(:empty)::after { margin-left: .25em; }
+    .auth-link { text-align: center; margin-top: 15px; font-size: 14px; color: #555; }
+    .auth-link a { color: #24439a; text-decoration: none; font-weight: 700; }
+  </style>
+<script src="nav.js"></script>
+</head>
+<body>
+
+<div class="auth-card">
+  <h2>Konekte</h2>
+  <form id="loginForm">
+    <div class="input-group">
+      <label>Imèl</label>
+      <input type="email" id="email" required placeholder="eksanp@gmail.com">
+    </div>
+    <div class="input-group">
+      <label>Modpas</label>
+      <a class="forgot-pass" id="forgotBtn">Bliye Modpas?</a>
+      <input type="password" id="password" required>
+    </div>
+    <button type="submit" class="btn-submit" id="submitBtn">Antre</button>
+  </form>
+
+  <div class="divider">OSWA</div>
+  
+  <button class="btn-google" id="googleBtn" type="button">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+    Konekte ak Google
+  </button>
+
+  <div class="auth-link">
+    Ou poko gen kont? <a href="inscription.html">Enskri la</a>
+  </div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDxN2jYclFAeSh9tMvkoeZCTsFvWNQYOzA",
+    authDomain: "ns4supportplus.firebaseapp.com",
+    projectId: "ns4supportplus",
+    storageBucket: "ns4supportplus.firebasestorage.app",
+    messagingSenderId: "1072291248908",
+    appId: "1:1072291248908:web:711d01129b833847c5a729",
+    measurementId: "G-DEYNQ8GQ9B"
+  };
+
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
+  const form = document.getElementById('loginForm');
+  const btn = document.getElementById('submitBtn');
+  const googleBtn = document.getElementById('googleBtn');
+  const forgotBtn = document.getElementById('forgotBtn');
+
+  let deviceId = localStorage.getItem("device_id");
+  if (!deviceId) {
+      deviceId = "dev_" + Math.random().toString(36).substr(2, 9) + Date.now();
+      localStorage.setItem("device_id", deviceId);
+  }
+
+  form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const pass = document.getElementById('password').value;
+      btn.disabled = true; 
+      btn.innerText = "Ap trete...";
+
+      try {
+          const userCredential = await auth.signInWithEmailAndPassword(email, pass);
+          await processLogin(userCredential.user);
+      } catch (error) {
+          let msg = error.message;
+          if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+              msg = "Imèl oswa modpas la pa bon.";
+          } else if (error.code === 'auth/invalid-email') {
+              msg = "Adrès imèl sa a pa valid.";
+          }
+          alert("Erè: " + msg);
+          btn.disabled = false; 
+          btn.innerText = "Antre";
+      }
+  });
+
+  googleBtn.addEventListener('click', async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+          const result = await auth.signInWithPopup(provider);
+          const user = result.user;
+          const snap = await db.ref('users/' + user.uid).once('value');
+          
+          if (!snap.exists()) {
+              let pseudo = user.displayName ? user.displayName.replace(/\s+/g, '').substring(0, 15) : "User" + Math.floor(Math.random() * 1000);
+              await db.ref('users/' + user.uid).set({
+                  uid: user.uid, pseudo: pseudo, email: user.email, coins: 50, xp: 0,
+                  streak: 1, status: "FREE", isConnected: true, photoURL: user.photoURL || null,
+                  createdAt: firebase.database.ServerValue.TIMESTAMP
+              });
+              await db.ref('leaderboard/' + user.uid).set({
+                  pseudo: pseudo, xp: 0, level: 1, streak: 1, photoURL: user.photoURL || null
+              });
+          }
+          await processLogin(user);
+      } catch (error) {
+          alert("Erè Google: " + error.message);
+      }
+  });
+
+  forgotBtn.addEventListener('click', () => {
+      const email = document.getElementById('email').value.trim();
+      if (!email) {
+          alert("Tanpri antre imèl ou nan bwat imèl la anvan ou klike sou Bliye Modpas.");
+          return;
+      }
+      auth.sendPasswordResetEmail(email).then(() => {
+          alert("Nou voye yon lyen nan imèl ou pou w chanje modpas la.");
+      }).catch((error) => {
+          alert("Erè: " + error.message);
+      });
+  });
+
+  async function processLogin(user) {
+      const sessionsRef = db.ref('users/' + user.uid + '/active_sessions');
+      const snap = await sessionsRef.once('value');
+      let sessionsCount = 0; 
+      let isDeviceAllowed = false;
+
+      if (snap.exists()) {
+          const data = snap.val();
+          sessionsCount = Object.keys(data).length;
+          if (data[deviceId]) isDeviceAllowed = true;
+      }
+
+      if (!isDeviceAllowed && sessionsCount >= 3) {
+          await auth.signOut();
+          alert("❌ Ou rive nan limit 3 aparèy la. Tanpri dekonekte sou yon lòt aparèy anvan.");
+          btn.disabled = false; 
+          btn.innerText = "Antre";
+          return;
+      }
+
+      await sessionsRef.child(deviceId).set({
+          loginAt: firebase.database.ServerValue.TIMESTAMP, platform: navigator.userAgent
+      });
+
+      const userSnap = await db.ref('users/' + user.uid).once('value');
+      let pseudo = userSnap.exists() ? userSnap.val().pseudo : "Itilizatè";
+
+      localStorage.setItem("ns4_user", JSON.stringify({ uid: user.uid, pseudo: pseudo }));
+      window.location.href = "home.html";
+  }
+</script>
+</body>
+</html>

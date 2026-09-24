@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#24439a">
+  <title>Multijoueur - NS4 Support+</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+  <style>
+    :root {
+      --primary: #24439a;
+      --primary-dark: #1d3783;
+      --primary-gradient: linear-gradient(135deg, #24439a 0%, #1d3783 100%);
+      --page-bg: #f4f6fa;
+      --white: #ffffff;
+      --text: #1a1a1a;
+      --muted: #666666;
+      --placeholder: #e9ecf3;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 15px rgba(36, 67, 154, 0.1);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      width: 100%; min-height: 100vh; background: var(--page-bg); color: var(--text);
+      font-family: "Inter", sans-serif; overflow-x: hidden; padding-bottom: 90px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* HEADER */
+    .app-header { width: 100%; background: var(--primary-gradient); color: var(--white); padding: 16px 20px 24px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; box-shadow: 0 4px 20px rgba(36, 67, 154, 0.2); }
+    .app-title-row { display: flex; align-items: center; justify-content: space-between; }
+    .app-title { font-family: "Baloo 2", sans-serif; font-size: 20px; font-weight: 800; }
+    .header-button { border: 0; background: rgba(255, 255, 255, 0.15); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); font-size: 16px; }
+    .header-button:active { background: rgba(255, 255, 255, 0.3); }
+    .hamburger-button { flex-direction: column; gap: 5px; border-radius: 12px; }
+    .hamburger-button span { width: 22px; height: 3px; background: white; border-radius: 3px; }
+
+    /* CONTENT */
+    .milti-content { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+    .section-title { font-family: "Baloo 2", sans-serif; font-size: 17px; font-weight: 700; margin: 18px 2px 12px; }
+
+    /* TABS */
+    .tab-nav { display: flex; gap: 8px; margin-bottom: 14px; border-bottom: 2px solid var(--placeholder); }
+    .tab-btn { padding: 12px 16px; background: none; border: none; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* JOUEURS ATTENTE */
+    .player-card { background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 14px; display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+    .player-avatar { width: 46px; height: 46px; border-radius: 50%; overflow: hidden; background: var(--page-bg); flex-shrink: 0; }
+    .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .player-info { flex: 1; min-width: 0; }
+    .player-name { font-weight: 700; font-size: 14px; }
+    .player-stake { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .btn-join { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; flex-shrink: 0; }
+    .btn-join:active { transform: scale(0.95); }
+
+    /* CREER MATCH */
+    .match-form { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 18px; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin: 14px 0 6px; }
+    .form-label:first-child { margin-top: 0; }
+    .form-input, .form-select { width: 100%; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--placeholder); font-family: "Inter", sans-serif; font-size: 15px; color: var(--text); background: var(--page-bg); outline: none; }
+    .form-input:focus, .form-select:focus { border-color: var(--primary); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn-primary { width: 100%; margin-top: 18px; padding: 14px; background: var(--primary-gradient); color: white; border: none; border-radius: 12px; font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; }
+    .btn-primary:active { transform: scale(0.97); }
+
+    /* ECRAN MATCH LIVE (SPLIT SCREEN) */
+    .match-arena { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .player-side { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 16px; display: flex; flex-direction: column; }
+    .player-header { text-align: center; margin-bottom: 12px; }
+    .player-avatar-big { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; margin: 0 auto 8px; }
+    .player-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
+    .player-pseudo { font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 14px; }
+    .player-status { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .match-question { background: var(--page-bg); padding: 12px; border-radius: 12px; margin: 12px 0; font-weight: 600; font-size: 13px; line-height: 1.4; }
+    .match-options { display: flex; flex-direction: column; gap: 8px; }
+    .option-btn { padding: 11px; background: var(--white); border: 2px solid var(--placeholder); border-radius: 10px; text-align: left; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .option-btn:hover { border-color: var(--primary); background: #eef2fb; }
+    .option-btn.selected { background: var(--primary); color: white; border-color: var(--primary); }
+    .option-btn.correct { background: #12d51c; color: white; border-color: #12d51c; }
+    .option-btn.incorrect { background: #ff4757; color: white; border-color: #ff4757; }
+    .match-timer { text-align: center; margin-top: 10px; font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 18px; color: var(--primary); }
+
+    /* CHAT */
+    .match-chat { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 14px; margin-bottom: 16px; max-height: 200px; display: flex; flex-direction: column; }
+    .chat-messages { flex: 1; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .chat-msg { display: flex; gap: 8px; font-size: 12px; }
+    .chat-sender { font-weight: 700; color: var(--primary); flex-shrink: 0; }
+    .chat-text { color: var(--text); flex: 1; }
+    .chat-input { display: flex; gap: 8px; }
+    .chat-input input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--placeholder); font-size: 12px; }
+    .chat-input button { padding: 8px 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; }
+
+    /* RESULTAT */
+    .match-result { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px; text-align: center; }
+    .result-title { font-family: "Baloo 2", sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 16px; }
+    .result-score { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .result-card { background: var(--page-bg); padding: 14px; border-radius: 12px; }
+    .result-pseudo { font-weight: 700; margin-bottom: 4px; }
+    .result-points { font-family: "Baloo 2", sans-serif; font-size: 18px; font-weight: 800; color: var(--primary); }
+    .result-gain { font-size: 12px; color: #12d51c; margin-top: 4px; }
+    .btn-rematch { width: 100%; margin-top: 12px; padding: 12px; background: var(--primary-gradient); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; }
+
+    /* TOAST */
+    .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #333; color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10000; display: flex; align-items: center; gap: 10px; }
+    .toast-container.show { transform: translateX(-50%) translateY(0); }
+
+    /* MENU DRAWER */
+    .main-menu { position: fixed; top: 0; right: -320px; width: 280px; height: 100vh; background: var(--white); z-index: 10001; box-shadow: -6px 0 20px rgba(0,0,0,0.1); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
+    .main-menu.open { right: 0; }
+    .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: none; backdrop-filter: blur(2px); }
+    .menu-overlay.show { display: block; }
+    .menu-header { background: var(--primary-gradient); color: white; padding: 40px 20px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .menu-header strong { font-family: "Baloo 2", sans-serif; font-size: 22px; }
+    .close-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .menu-links { padding: 10px 0; overflow-y: auto; }
+    .menu-link { padding: 16px 24px; font-size: 16px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--placeholder); cursor: pointer; }
+    .menu-link:active { background: var(--page-bg); }
+    .menu-link.logout-btn { color: #ff4757; font-weight: 700; }
+
+    /* BOTTOM NAV */
+    .bottom-navigation { position: fixed; left: 0; bottom: 0; width: 100%; height: 75px; background: var(--white); border-top-left-radius: 20px; border-top-right-radius: 20px; display: grid; grid-template-columns: repeat(4, 1fr); box-shadow: 0 -4px 20px rgba(0,0,0,0.06); z-index: 1000; padding: 5px 10px 15px; }
+    .bottom-item { border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--muted); cursor: pointer; position: relative; }
+    .bottom-icon { font-size: 22px; }
+    .bottom-item span { font-size: 12px; font-weight: 600; }
+    .bottom-item.active { color: var(--primary); }
+    .bottom-item.active::after { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 30px; height: 3px; background: var(--primary); border-radius: 0 0 4px 4px; }
+
+    .state-msg { text-align: center; padding: 20px; color: var(--muted); font-size: 13px; }
+  </style>
+<script src="ads.js"></script>
+<script src="nav.js"></script>
+</head>
+<body>
+
+<div id="toast" class="toast-container">
+  <span id="toast-icon">ℹ️</span>
+  <span id="toast-message">Mesaj la ap parèt isit la.</span>
+</div>
+
+<div id="menu-overlay" class="menu-overlay" onclick="toggleMainMenu()"></div>
+
+<header class="app-header">
+  <div class="app-title-row">
+    <button class="header-button" onclick="window.location.href='home.html'" aria-label="Retounen">⬅️</button>
+    <div class="app-title">🎮 Multijoueur</div>
+    <button class="header-button hamburger-button" onclick="toggleMainMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main class="milti-content">
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('attente')">🔍 Cherche Adversaire</button>
+    <button class="tab-btn" onclick="switchTab('creer')">➕ Kriye Match</button>
+    <button class="tab-btn" onclick="switchTab('historique')">📊 Istorik</button>
+  </div>
+
+  <!-- TAB ATTENTE (Liste des joueurs cherchant) -->
+  <div id="tab-attente" class="tab-content">
+    <div class="section-title">Joueurs en attente</div>
+    <div id="players-list"><div class="state-msg">Ap chaje...</div></div>
+  </div>
+
+  <!-- TAB CREER MATCH -->
+  <div id="tab-creer" class="tab-content" style="display:none;">
+    <div class="section-title">Kriye yon Match</div>
+    <div class="match-form">
+      <label class="form-label">Matière</label>
+      <select id="create-matiere" class="form-select">
+        <option value="">Chwazi yon matye</option>
+        <option value="Matematik">Matematik</option>
+        <option value="Fizik">Fizik</option>
+        <option value="Chimik">Chimik</option>
+        <option value="Syans Lavi">Syans Lavi</option>
+      </select>
+
+      <div class="form-row">
+        <div>
+          <label class="form-label">Nombre de kesyon</label>
+          <select id="create-questions" class="form-select">
+            <option value="5">5 kesyon</option>
+            <option value="10">10 kesyon</option>
+            <option value="15">15 kesyon</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Pyès an jwe</label>
+          <input type="number" id="create-coins" class="form-input" value="50" min="10">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label class="form-label">Nivo difisil</label>
+          <select id="create-difficulte" class="form-select">
+            <option value="">Tout nivo</option>
+            <option value="fasi">Fasi</option>
+            <option value="nòmal">Nòmal</option>
+            <option value="difisil">Difisil</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Minuteur (sekonn)</label>
+          <input type="number" id="create-timer" class="form-input" value="15" min="5" max="60">
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="createMatch()">Kriye Match</button>
+    </div>
+  </div>
+
+  <!-- TAB HISTORIQUE -->
+  <div id="tab-historique" class="tab-content" style="display:none;">
+    <div class="section-title">Istorik Match yo</div>
+    <div id="history-list"><div class="state-msg">Ap chaje...</div></div>
+  </div>
+
+  <!-- MATCH EN COURS (Affiché après acceptation) -->
+  <div id="match-live" style="display:none;">
+    <div class="match-arena" id="match-arena"></div>
+    <div class="match-chat">
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Mesaj..." maxlength="100">
+        <button onclick="sendChatMessage()">Voye</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTAT -->
+  <div id="match-result" style="display:none;"></div>
+</main>
+
+<div class="main-menu" id="main-menu">
+  <div class="menu-header">
+    <strong>NS4 Support+</strong>
+    <button class="close-btn" onclick="toggleMainMenu()" type="button">×</button>
+  </div>
+  <div class="menu-links">
+    <div class="menu-link" onclick="window.location.href = 'home.html'">🏠 Akèy</div>
+    <div class="menu-link" onclick="window.location.href = 'quiz.html'">📚 Matyè & Quiz</div>
+    <div class="menu-link" onclick="window.location.href = 'ranking.html'">🏆 Klasman</div>
+    <div class="menu-link" onclick="window.location.href = 'paramèt.html'">⚙️ Paramèt</div>
+    <div class="menu-link logout-btn" onclick="logout()">🚪 Dekonekte</div>
+  </div>
+</div>
+
+<nav class="bottom-navigation">
+  <button class="bottom-item" onclick="window.location.href = 'home.html'" type="button">
+    <div class="bottom-icon">🏠</div><span>Akèy</span>
+  </button>
+  <button class="bottom-item" onclick="window.location.href = 'ranking.html'" type="button">
+    <div class="bottom-icon">🏆</div><span>Klasman</span>
+  </button>
+  <button class="bottom-item active" type="button">
+    <div class="bottom-icon">🎮</div><span>Militjwe</span>
+  </button>
+  <button class="bottom-item" onclick="toggleMainMenu()" type="button">
+    <div class="bottom-icon">☰</div><span>Menu</span>
+  </button>
+</nav>
+
+<script src="milti.js"></script>
+<div id="sw-status" style="display:none;font-size:14px;color:#666;">
+  ⏳ N ap prepare done pou mòd san entènèt... <span id="sw-count">0/0</span>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(console.error);
+  navigator.serviceWorker.ready.then((reg) => {
+    if (reg.active) reg.active.postMessage({ type: 'check-update' });
+  }).catch(() => {});
+
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    const { type, done, total } = e.data || {};
+    const box = document.getElementById('sw-status');
+    const cnt = document.getElementById('sw-count');
+    if (type === 'dl-start' || type === 'dl-progress') {
+      box.style.display = 'block';
+      cnt.textContent = `${done || 0}/${total}`;
+    }
+    if (type === 'dl-complete') {
+      box.textContent = '✅ Done yo pare pou mòd san entènèt.';
+      setTimeout(() => (box.style.display = 'none'), 3000);
+    }
+  });
+}
+</script>
+</body>
+</html>

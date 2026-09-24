@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#24439a">
+  <title>NS4 Support Plus</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+  <style>
+    /* =========================================================
+       VARIABLES & RESET
+    ========================================================= */
+    :root {
+      --primary: #24439a;
+      --primary-dark: #1d3783;
+      --primary-gradient: linear-gradient(135deg, #24439a 0%, #1d3783 100%);
+      --page-bg: #f4f6fa;
+      --white: #ffffff;
+      --black: #000000;
+      --text: #1a1a1a;
+      --muted: #666666;
+      --placeholder: #e9ecf3;
+      --green: #12d51c;
+      --gold: #ffc107;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 15px rgba(36, 67, 154, 0.1);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      width: 100%;
+      min-height: 100vh;
+      background: var(--page-bg);
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      overflow-x: hidden;
+      padding-bottom: 90px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* =========================================================
+       HEADER & GAMIFICATION
+    ========================================================= */
+    .app-header {
+      width: 100%;
+      background: var(--primary-gradient);
+      color: var(--white);
+      padding: 16px 20px 24px;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
+      box-shadow: 0 4px 20px rgba(36, 67, 154, 0.2);
+      position: relative;
+    }
+
+    .app-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+    .app-title { font-family: "Baloo 2", sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.5px; }
+    .header-actions { display: flex; gap: 15px; }
+    
+    .header-button { border: 0; background: rgba(255, 255, 255, 0.15); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); transition: background 0.2s; }
+    .header-button:active { background: rgba(255, 255, 255, 0.3); }
+    
+    .hamburger-button { flex-direction: column; gap: 5px; border-radius: 12px; }
+    .hamburger-button span { width: 22px; height: 3px; background: white; border-radius: 3px; }
+    
+    .notification-button { position: relative; }
+    .bell { font-size: 20px; }
+    .notification-badge { display: none; position: absolute; width: 12px; height: 12px; background: #ff4757; border-radius: 50%; top: 8px; right: 8px; border: 2px solid var(--primary); }
+    .notification-badge.show { display: block; }
+
+    /* =========================================================
+       NOTIFICATION SHEET (bottom sheet)
+    ========================================================= */
+    .notif-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: none; backdrop-filter: blur(2px); }
+    .notif-overlay.show { display: block; }
+    .notif-sheet { position: fixed; left: 0; right: 0; bottom: -100%; max-height: 75vh; background: var(--white); z-index: 10001; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -6px 20px rgba(0,0,0,0.15); transition: bottom 0.3s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; }
+    .notif-sheet.open { bottom: 0; }
+    .notif-sheet-handle { width: 40px; height: 4px; background: var(--placeholder); border-radius: 4px; margin: 10px auto 0; flex-shrink: 0; }
+    .notif-sheet-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; flex-shrink: 0; }
+    .notif-sheet-header strong { font-family: "Baloo 2", sans-serif; font-size: 18px; }
+    .notif-list { overflow-y: auto; padding: 0 16px 24px; }
+    .notif-item { display: flex; gap: 12px; padding: 14px; border-radius: 14px; margin-bottom: 8px; background: var(--page-bg); }
+    .notif-item.unread { background: #eef2fb; }
+    .notif-item.reminder { background: #fff8e6; border-left: 4px solid var(--gold); }
+    .notif-icon { font-size: 22px; flex-shrink: 0; }
+    .notif-body { flex: 1; min-width: 0; }
+    .notif-title { font-weight: 700; font-size: 14px; }
+    .notif-msg { font-size: 13px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+    .notif-time { font-size: 11px; color: #999; margin-top: 4px; }
+    .notif-tour-btn { margin-top: 8px; background: var(--primary); color: white; border: none; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .notif-list .state-msg { text-align: center; padding: 20px; color: var(--muted); font-size: 13px; }
+
+    /* =========================================================
+       TOUR ANIME (nouvo fonksyonalite)
+    ========================================================= */
+    .tour-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 20001; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
+    .tour-overlay.show { display: flex; }
+    .tour-card { background: white; width: 100%; max-width: 340px; border-radius: 24px; padding: 30px 22px 22px; position: relative; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+    .tour-slide { display: none; }
+    .tour-slide.active { display: block; animation: tourPop 0.4s ease; }
+    @keyframes tourPop { 0% { opacity: 0; transform: scale(0.85); } 100% { opacity: 1; transform: scale(1); } }
+    .tour-icon { font-size: 54px; margin-bottom: 14px; display: inline-block; animation: pulse 2s infinite; }
+    .tour-title { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 19px; color: var(--primary); margin-bottom: 8px; }
+    .tour-text { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .tour-dots { display: flex; justify-content: center; gap: 6px; margin: 18px 0 16px; }
+    .tour-dot { width: 8px; height: 8px; border-radius: 4px; background: var(--placeholder); transition: 0.3s; }
+    .tour-dot.active { width: 22px; background: var(--primary); }
+    .btn-tour-next { width: 100%; padding: 13px; background: var(--primary-gradient); color: white; border: none; border-radius: 12px; font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; }
+
+    /* Profile Row */
+    .profile-welcome-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .profile-pill { display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.15); padding: 6px 16px 6px 6px; border-radius: 40px; cursor: pointer; }
+    .profile-avatar { width: 50px; height: 50px; border-radius: 50%; border: 3px solid var(--white); overflow: hidden; background: var(--white); }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    #profile-name { font-size: 16px; font-weight: 700; color: var(--white); }
+    
+    .welcome-message { flex: 1; font-family: "Baloo 2", sans-serif; font-size: 18px; line-height: 1.2; color: rgba(255,255,255,0.9); }
+    .welcome-message strong { color: var(--gold); display: block; font-size: 20px; }
+
+    /* Stats Grid */
+    .stats-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: var(--white); padding: 15px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); margin-top: 10px; transform: translateY(15px); }
+    .stat-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .stat-value-wrapper { display: flex; align-items: baseline; gap: 4px; }
+    .stat-value { font-family: "Baloo 2", sans-serif; font-size: 24px; font-weight: 800; color: var(--text); line-height: 1; }
+    .stat-icon { font-size: 18px; }
+    .stat-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+    /* XP Progress Bar */
+    .xp-progress-container { grid-column: span 4; margin-top: 10px; width: 100%; }
+    .xp-bar-bg { height: 8px; background: var(--placeholder); border-radius: 10px; overflow: hidden; position: relative; }
+    .xp-bar-fill { height: 100%; background: linear-gradient(90deg, #12d51c, #00e676); width: 0%; border-radius: 10px; transition: width 0.8s ease-in-out; }
+    .xp-text { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 5px; font-weight: 600; }
+
+    /* =========================================================
+       MAIN CONTENT
+    ========================================================= */
+    .home-content { max-width: 900px; margin: 30px auto 0; padding: 0 20px; }
+
+    /* Promo Slider */
+    .promo-section { width: 100%; margin-bottom: 25px; overflow: hidden; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); position: relative; }
+    .slider-track { display: flex; transition: transform 0.4s ease-in-out; }
+    .slide { height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 30px; background-size: cover; background-position: center; position: relative; color: white; }
+    
+    .slide::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 100%); z-index: 1; }
+    .slide-content { position: relative; z-index: 2; }
+    
+    .promo-main-text { font-family: "Baloo 2", sans-serif; font-size: 24px; font-weight: 800; line-height: 1.1; margin-bottom: 5px; }
+    .promo-sub-text { font-size: 14px; font-weight: 500; opacity: 0.9; }
+    
+    .slider-dots { position: absolute; bottom: 15px; left: 0; width: 100%; display: flex; justify-content: center; gap: 8px; z-index: 3; }
+    .slider-dot { width: 8px; height: 8px; border-radius: 4px; border: none; background: rgba(255,255,255,0.4); cursor: pointer; transition: 0.3s; }
+    .slider-dot.active { width: 24px; background: var(--white); }
+
+    /* Feature Grid */
+    .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 25px; }
+    
+    .feature-card { background: var(--white); border-radius: var(--radius-md); padding: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+    .feature-card:active { transform: scale(0.96); background: #fafafa; }
+    
+    .feature-icon-wrapper { width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 12px; background: var(--page-bg); }
+    .feature-card:nth-child(1) .feature-icon-wrapper { background: #e3f2fd; color: #1976d2; }
+    .feature-card:nth-child(2) .feature-icon-wrapper { background: #fbe9e7; color: #d84315; }
+    .feature-card:nth-child(3) .feature-icon-wrapper { background: #e8f5e9; color: #388e3c; }
+    .feature-card:nth-child(4) .feature-icon-wrapper { background: #f3e5f5; color: #7b1fa2; }
+    .feature-card:nth-child(5) .feature-icon-wrapper { background: #fff8e1; color: #f57f17; }
+    .feature-card:nth-child(6) .feature-icon-wrapper { background: #eceff1; color: #455a64; }
+
+    .feature-title { font-family: "Baloo 2", sans-serif; font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.1; margin-bottom: 4px; }
+    .feature-description { color: var(--muted); font-size: 12px; font-weight: 500; }
+
+    /* AdMob */
+    .reward-ad { display:flex; align-items:center; justify-content:space-between; gap:12px; background:#fff8e6; border:1px solid #ffe08a; border-radius:16px; padding:14px 16px; margin-bottom:25px; }
+    .reward-ad-text { display:flex; flex-direction:column; gap:2px; font-size:13px; color:#8a6500; }
+    .reward-ad-text strong { font-size:15px; color:#6b4e00; }
+    .reward-ad button { border:0; border-radius:12px; padding:11px 18px; font-weight:800; font-size:14px; background:var(--primary); color:#fff; flex-shrink:0; }
+    .reward-ad button:disabled { opacity:.5; }
+    .reward-ad.hidden { display:none; }
+    .ad-container { margin-bottom: 25px; text-align: center; }
+    .ad-label { font-size: 10px; color: #aaa; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
+    .ad-space { height: 60px; background: #e0e0e0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px; border: 1px dashed #bbb; }
+
+    /* =========================================================
+       BOTTOM NAVIGATION
+    ========================================================= */
+.bottom-navigation { position: fixed; left: 0; bottom: 0; width: 100%; height: 75px; background: var(--white); border-top-left-radius: 20px; border-top-right-radius: 20px; display: grid; grid-template-columns: repeat(4, 1fr); box-shadow: 0 -4px 20px rgba(0,0,0,0.06); z-index: 1000; padding: 5px 10px 15px; }
+
+    .bottom-item { border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--muted); cursor: pointer; transition: 0.3s; position: relative; }
+    .bottom-icon { font-size: 22px; transition: transform 0.2s; }
+    .bottom-item span { font-size: 12px; font-weight: 600; }
+    
+    .bottom-item.active { color: var(--primary); }
+    .bottom-item.active .bottom-icon { transform: translateY(-3px); }
+    .bottom-item.active::after { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 30px; height: 3px; background: var(--primary); border-radius: 0 0 4px 4px; }
+
+    /* =========================================================
+       TOAST NOTIFICATION
+    ========================================================= */
+    .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #333; color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10000; display: flex; align-items: center; gap: 10px; }
+    .toast-container.show { transform: translateX(-50%) translateY(0); }
+
+    /* =========================================================
+       MENU DRAWER
+    ========================================================= */
+    .main-menu { position: fixed; top: 0; right: -320px; width: 280px; height: 100vh; background: var(--white); z-index: 10001; box-shadow: -6px 0 20px rgba(0,0,0,0.1); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
+    .main-menu.open { right: 0; }
+    .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: none; backdrop-filter: blur(2px); }
+    .menu-overlay.show { display: block; }
+    
+    .menu-header { background: var(--primary-gradient); color: white; padding: 40px 20px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .menu-header strong { font-family: "Baloo 2", sans-serif; font-size: 22px; }
+    .close-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .menu-links { padding: 10px 0; overflow-y: auto; }
+    .menu-link { padding: 16px 24px; font-size: 16px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--placeholder); transition: background 0.2s; cursor: pointer; }
+    .menu-link:active { background: var(--page-bg); }
+    .menu-link.logout-btn { color: #ff4757; font-weight: 700; }
+    
+    /* =========================================================
+       PRO MODAL STYLES
+    ========================================================= */
+    .pro-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 20000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(5px); padding: 20px; }
+    .pro-modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .pro-modal-content { background: linear-gradient(145deg, #1d3783, #24439a); width: 100%; max-width: 350px; border-radius: 24px; padding: 30px 20px; text-align: center; color: white; position: relative; transform: translateY(30px); transition: transform 0.3s; box-shadow: 0 15px 35px rgba(0,0,0,0.3); border: 2px solid #ffc107; }
+    .pro-modal-overlay.show .pro-modal-content { transform: translateY(0); }
+    .pro-icon-large { font-size: 50px; margin-bottom: 10px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    .pro-title { font-family: "Baloo 2", sans-serif; font-size: 28px; font-weight: 800; color: #ffc107; margin-bottom: 5px; }
+    .pro-desc { font-size: 14px; opacity: 0.9; margin-bottom: 20px; }
+    .pro-features { text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; }
+    .pro-feature-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; font-weight: 500; }
+    .pro-feature-item:last-child { margin-bottom: 0; }
+    .btn-buy-pro { width: 100%; padding: 15px; background: #ffc107; color: #1d3783; font-weight: 800; font-size: 18px; border: none; border-radius: 12px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(255,193,7,0.3); }
+    .btn-buy-pro:active { transform: scale(0.96); }
+    .btn-close-modal { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 18px; cursor: pointer; }
+
+  </style>
+<script src="ads.js"></script>
+<script src="nav.js"></script>
+</head>
+<body>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="toast-container">
+  <span id="toast-icon">ℹ️</span>
+  <span id="toast-message">Mesaj la ap parèt isit la.</span>
+</div>
+
+<!-- MENU OVERLAY -->
+<div id="menu-overlay" class="menu-overlay" onclick="toggleMainMenu()"></div>
+
+<!-- APP HEADER -->
+<header class="app-header">
+  <div class="app-title-row">
+    <div class="app-title">NS4 Support+</div>
+    <div class="header-actions">
+      <button class="header-button notification-button" onclick="openNotifPanel()" aria-label="Notifikasyon">
+        <span class="bell">🔔</span>
+        <span class="notification-badge" id="notification-badge"></span>
+      </button>
+      <button class="header-button hamburger-button" onclick="toggleMainMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="profile-welcome-row">
+    <div class="profile-pill" onclick="window.location.href = 'pwofil.html'">
+      <div class="profile-avatar">
+        <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&background=ffffff&color=24439a&bold=true" alt="Profil">
+      </div>
+      <span id="profile-name">Itilizatè</span>
+    </div>
+    <div class="welcome-message">
+      <span id="welcome-text">Pakou siksè w kòmanse</span>
+      <strong id="welcome-subtext">Jodi a 🚀</strong>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="home-content">
+  
+  <!-- STATS / GAMIFICATION -->
+  <div class="stats-container">
+    <div class="stat-item coins">
+      <div class="stat-value-wrapper">
+        <span class="stat-value" id="user-coins">0</span><span class="stat-icon">🪙</span>
+      </div>
+      <span class="stat-label">Pyès</span>
+    </div>
+    <div class="stat-item streak">
+      <div class="stat-value-wrapper">
+        <span class="stat-value" id="user-streak">0</span><span class="stat-icon">🔥</span>
+      </div>
+      <span class="stat-label">Jou afile</span>
+    </div>
+    <div class="stat-item rank">
+      <div class="stat-value-wrapper">
+        <span class="stat-value" id="user-rank">#-</span><span class="stat-icon">🏆</span>
+      </div>
+      <span class="stat-label">Klasman</span>
+    </div>
+<div class="stat-item pro" onclick="showProModal()" style="cursor: pointer;">
+  <div class="stat-value-wrapper">
+    <span class="stat-value" id="user-status">FREE</span><span class="stat-icon" id="user-status-icon">⭐</span>
+  </div>
+  <span class="stat-label">Stati</span>
+</div>
+
+    <!-- XP Progress -->
+    <div class="xp-progress-container">
+      <div class="xp-text">
+        <span id="user-level">Nivo 1</span>
+        <span id="user-xp-text">0 / 100 XP</span>
+      </div>
+      <div class="xp-bar-bg">
+        <div class="xp-bar-fill" id="xp-bar-fill" style="width: 0%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESPAS POU PUBLICITÉ / SLIDER ANIME KONEKTE AK FIREBASE -->
+  <section class="promo-section" id="promo-slider-container">
+    <div class="slider-track" id="slider-track">
+      <!-- JS la pral mete div slider yo isit la otomatikman pou kenbe estrikti a pwòp -->
+    </div>
+    
+    <div class="slider-dots" id="slider-dots">
+      <!-- JavaScript ap jenere bouton pwen sa yo -->
+    </div>
+  </section>
+
+  <!-- FONKSYON PRINCIPAL -->
+  <section class="feature-grid">
+    <article class="feature-card" onclick="window.location.href = 'quiz.html'">
+      <div class="feature-icon-wrapper">📚</div>
+      <div class="feature-title">Matyè & Quiz</div>
+      <div class="feature-description">Teste konesans ou</div>
+    </article>
+
+    <article class="feature-card" onclick="window.location.href = 'exam.html'">
+      <div class="feature-icon-wrapper">📝</div>
+      <div class="feature-title">Modèl Egzamen</div>
+      <div class="feature-description">Ansyen sijè BAC</div>
+    </article>
+
+    <article class="feature-card" onclick="window.location.href = 'defi.html'">
+      <div class="feature-icon-wrapper">🎯</div>
+      <div class="feature-title">Defi Semèn nan</div>
+      <div class="feature-description">Akonpli misyon yo</div>
+    </article>
+
+    <article class="feature-card" onclick="window.location.href = 'fòmil.html'">
+      <div class="feature-icon-wrapper">📐</div>
+      <div class="feature-title">Fòmilè</div>
+      <div class="feature-description">Matematik & Fizik</div>
+    </article>
+
+    <article class="feature-card" onclick="window.location.href = 'vocab.html'">
+      <div class="feature-icon-wrapper">📓</div>
+      <div class="feature-title">Vokabilè & Nòt</div>
+      <div class="feature-description">Kenbe nòt ou yo</div>
+    </article>
+
+    <article class="feature-card" onclick="window.location.href = 'paramèt.html'">
+      <div class="feature-icon-wrapper">⚙️</div>
+      <div class="feature-title">Paramèt</div>
+      <div class="feature-description">Konfigirasyon kont</div>
+    </article>
+  </section>
+
+  <!-- 🎁 RÉCOMPENSE PUB (10 pièces) — la bannière AdMob est native, en bas de l'écran -->
+  <section class="reward-ad" id="reward-ad">
+    <div class="reward-ad-text">
+      <strong>🎁 Gratis: +10 🪙 pyès</strong>
+      <span id="reward-ad-left">Gade yon piblisite kout</span>
+    </div>
+    <button type="button" id="reward-ad-btn" onclick="watchAdForCoins()">📺 Gade</button>
+  </section>
+
+  <!-- SIDE MENU -->
+  <div class="main-menu" id="main-menu">
+    <div class="menu-header">
+      <strong>NS4 Support+</strong>
+      <button class="close-btn" onclick="toggleMainMenu()" type="button">×</button>
+    </div>
+    <div class="menu-links">
+      <div class="menu-link" onclick="window.location.href = 'quiz.html'">📚 Matyè & Quiz</div>
+      <div class="menu-link" onclick="window.location.href = 'defi.html'">🎯 Defi</div>
+      <div class="menu-link" onclick="window.location.href = 'fòmil.html'">📐 Fòmilè</div>
+      <div class="menu-link" onclick="window.location.href = 'vocab.html'">📝 Vokabilè & Nòt</div>
+      <div class="menu-link" onclick="simulateNav('Boutik')">🛒 Boutik Pyès</div>
+      <div class="menu-link" onclick="window.location.href = 'paramèt.html'">⚙️ Paramèt</div>
+      <div class="menu-link logout-btn" onclick="logout()">🚪 Dekonekte</div>
+    </div>
+  </div>
+</main>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom-navigation">
+  <button class="bottom-item active" onclick="activateTab(this)" type="button">
+    <div class="bottom-icon">🏠</div>
+    <span>Akèy</span>
+  </button>
+  <button class="bottom-item" onclick="activateTab(this); window.location.href = 'ranking.html'" type="button">
+    <div class="bottom-icon">🏆</div>
+    <span>Klasman</span>
+  </button>
+  <button class="bottom-item" onclick="activateTab(this); window.location.href = 'milti.html'" type="button">
+    <div class="bottom-icon">🎮</div>
+    <span>Militjwe</span>
+  </button>
+  <button class="bottom-item" onclick="toggleMainMenu()" type="button">
+    <div class="bottom-icon">☰</div>
+    <span>Menu</span>
+  </button>
+</nav>
+
+<!-- NOTIFICATION SHEET -->
+<div class="notif-overlay" id="notif-overlay" onclick="closeNotifPanel()"></div>
+<div class="notif-sheet" id="notif-sheet">
+  <div class="notif-sheet-handle"></div>
+  <div class="notif-sheet-header">
+    <strong>Notifikasyon</strong>
+    <button class="close-btn" onclick="closeNotifPanel()" type="button">×</button>
+  </div>
+  <div class="notif-list" id="notif-list">
+    <div class="state-msg">Ap chaje...</div>
+  </div>
+</div>
+
+<!-- TOUR ANIME POU NOUVO FONKSYONALITE -->
+<div class="tour-overlay" id="tour-overlay">
+  <div class="tour-card">
+    <button class="btn-close-modal" onclick="closeTour()">×</button>
+    <div id="tour-slides"></div>
+    <div class="tour-dots" id="tour-dots"></div>
+    <button class="btn-tour-next" id="tour-next-btn" onclick="tourNext()" type="button">Kontinye</button>
+  </div>
+</div>
+
+<!-- PRO UPGRADE MODAL -->
+<div id="pro-modal" class="pro-modal-overlay">
+  <div class="pro-modal-content">
+    <button class="btn-close-modal" onclick="closeProModal()">×</button>
+
+    <div id="pro-panel-plans">
+      <div class="pro-icon-large">👑</div>
+      <div class="pro-title">Vini PRO Jodia!</div>
+      <div class="pro-desc">Lwe vèsyon PRO a pou gen aksè total.</div>
+
+      <div class="pro-features">
+        <div class="pro-feature-item">✔️ Aksè san limit nan tout ansyen Sijè BAC</div>
+        <div class="pro-feature-item">✔️ Pa gen okenn Piblisite</div>
+        <div class="pro-feature-item">✔️ Koreksyon detaye pou tout Egzèsis</div>
+        <div class="pro-feature-item">✔️ Aksè nan Militjwe</div>
+      </div>
+
+      <button class="btn-buy-pro" onclick="buyPro('week', 300)" type="button">1 Semèn (300 Pyès)</button>
+      <button class="btn-buy-pro" onclick="buyPro('month', 1000)" style="margin-top: 10px; background: white; color: #24439a;" type="button">1 Mwa (1000 Pyès)</button>
+      <button class="btn-buy-pro" onclick="showAnnualPaymentForm()" style="margin-top: 10px; background: var(--gold, #ffc107); color: #7a4b00;" type="button">1 An (250 HTG) 💵</button>
+    </div>
+
+    <div id="pro-panel-annual" style="display:none;">
+      <div class="pro-icon-large">💵</div>
+      <div class="pro-title" style="font-size:20px;">Plan Anyèl — 250 HTG</div>
+      <div class="pro-desc">Voye 250 HTG sou youn nan nimewo sa yo, epi mete referans/ID tranzaksyon an anba a. Yon admin ap verifye epi valide manyèlman anndan 24-48è.</div>
+
+      <div style="background:rgba(255,255,255,0.12); border-radius:12px; padding:12px; margin-bottom:14px; text-align:left; font-size:13px;">
+        <div>📱 <strong>MonCash:</strong> <span id="moncash-number">METE NIMEWO MONCASH OU</span></div>
+        <div style="margin-top:6px;">📱 <strong>NatCash:</strong> <span id="natcash-number">METE NIMEWO NATCASH OU</span></div>
+      </div>
+
+      <select id="payment-method" style="width:100%; padding:11px; border-radius:10px; border:none; margin-bottom:10px; font-size:14px;">
+        <option value="MonCash">Peman fèt ak MonCash</option>
+        <option value="NatCash">Peman fèt ak NatCash</option>
+      </select>
+      <input type="text" id="payment-reference" placeholder="ID Tranzaksyon / Referans" style="width:100%; padding:11px; border-radius:10px; border:none; margin-bottom:14px; font-size:14px; box-sizing:border-box;">
+
+      <button class="btn-buy-pro" onclick="submitProPaymentRequest()" type="button">Voye pou Verifikasyon</button>
+      <button class="btn-buy-pro" onclick="backToPlans()" style="margin-top:10px; background:transparent; color:white; border:2px solid rgba(255,255,255,0.4); box-shadow:none;" type="button">Retounen</button>
+    </div>
+
+    <div id="pro-panel-pending" style="display:none; text-align:center;">
+      <div class="pro-icon-large">⏳</div>
+      <div class="pro-title" style="font-size:19px;">Demann ou an atant</div>
+      <div class="pro-desc">Nou resevwa demann peman ou. Yon admin ap verifye l anndan 24-48è. Ou ap resevwa yon notifikasyon lè plan PRO ou aktive.</div>
+      <button class="btn-buy-pro" onclick="closeProModal()" type="button">Konpri</button>
+    </div>
+
+    <div id="pro-panel-active" style="display:none; text-align:center;">
+      <div class="pro-icon-large">👑</div>
+      <div class="pro-title" style="font-size:19px;">Ou se yon manm PRO!</div>
+      <div class="pro-desc">Plan ou ap ekspire <strong id="pro-expire-date">-</strong>.</div>
+      <button class="btn-buy-pro" onclick="showRenewOptions()" type="button">Ranouvle / Pwolonje</button>
+      <button class="btn-buy-pro" onclick="closeProModal()" style="margin-top:10px; background:transparent; color:white; border:2px solid rgba(255,255,255,0.4); box-shadow:none;" type="button">Fèmen</button>
+    </div>
+  </div>
+</div>
+
+<!-- JS INTEGRASYON -->
+<!-- POPUP TELECHAJMAN SW -->
+<div id="sw-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;width:85%;text-align:center;box-shadow:0 15px 35px rgba(0,0,0,.3);">
+    <div id="sw-icon" style="font-size:38px;margin-bottom:8px;">⏳</div>
+    <div id="sw-title" style="font-weight:800;font-size:16px;color:#24439a;margin-bottom:6px;">Done yo ap telechaje pou w ka sèvi avèk aplikasyon an sa entènèt ...</div>
+    <div style="font-size:13px;color:#666;margin-bottom:16px;">Tanpri pran yon ti pasyans...</div>
+    <div style="background:#e9ecf3;border-radius:10px;height:10px;overflow:hidden;margin-bottom:8px;">
+      <div id="sw-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#12d51c,#00e676);transition:width .3s;"></div>
+    </div>
+    <div id="sw-count" style="font-size:12px;color:#999;font-weight:600;">0/0</div>
+    <button id="sw-skip" style="display:none;margin-top:16px;border:none;background:#24439a;color:#fff;padding:10px 24px;border-radius:20px;font-weight:700;font-size:13px;">Kontinye kanmenm</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const overlay = document.getElementById('sw-overlay');
+  const bar     = document.getElementById('sw-bar');
+  const count   = document.getElementById('sw-count');
+  const title   = document.getElementById('sw-title');
+  const icon    = document.getElementById('sw-icon');
+  const skipBtn = document.getElementById('sw-skip');
+
+  const show = () => overlay.style.display = 'flex';
+  const hide = () => overlay.style.display = 'none';
+  const setProgress = (done, total) => {
+    bar.style.width = (total ? Math.round(done/total*100) : 0) + '%';
+    count.textContent = done + '/' + total;
+  };
+
+  // Si okenn nouvèl pa rive nan 6s, pa kenbe moun nan bloke
+  const safety = setTimeout(() => skipBtn.style.display = 'inline-block', 10000);
+  skipBtn.onclick = hide;
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(console.error);
+    navigator.serviceWorker.ready.then((reg) => {
+      if (reg.active) reg.active.postMessage({ type: 'check-update' });
+    }).catch(() => {});
+
+    navigator.serviceWorker.addEventListener('message', (e) => {
+      const { type, done, total } = e.data || {};
+      if (type === 'dl-start')    { show(); setProgress(0, total); }
+      if (type === 'dl-progress') { show(); setProgress(done, total); }
+      if (type === 'dl-complete') {
+        clearTimeout(safety);
+        setProgress(done, total);
+        icon.textContent = '✅';
+        title.textContent = 'Done yo pare!';
+        setTimeout(hide, 1200);
+      }
+    });
+
+    // Si done yo deja sove (vizit anvan), pa gen rezon pou blòke moun nan
+    navigator.serviceWorker.ready.then(() => {
+      const req = indexedDB.open('ns4-offline-db', 1);
+      req.onsuccess = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains('files')) return;
+        db.transaction('files', 'readonly').objectStore('files').count().onsuccess = (ev) => {
+          if (ev.target.result > 0) { clearTimeout(safety); hide(); }
+        };
+      };
+    });
+  }
+})();
+</script>
+<script src="stats.js"></script>
+<script src="home.js"></script>
+<script src="notifications.js"></script>
+</body>
+</html>
