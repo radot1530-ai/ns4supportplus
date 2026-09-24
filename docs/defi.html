@@ -179,6 +179,9 @@
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(console.error);
+  navigator.serviceWorker.ready.then((reg) => {
+    if (reg.active) reg.active.postMessage({ type: 'check-update' });
+  }).catch(() => {});
 
   navigator.serviceWorker.addEventListener('message', (e) => {
     const { type, done, total } = e.data || {};
