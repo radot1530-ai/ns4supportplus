@@ -18,7 +18,7 @@ const auth = firebase.auth();
   ⚠️ MENM BAZ KESYON AK MULTIJOUE (milti.js) — ranplase ak
      pwòp lyen GitHub ou
 =========================================================*/
-const GITHUB_BASE = "https://raw.githubusercontent.com/METE_NON_ITILIZATE_OU/METE_NON_REPO_OU/main/questions/";
+const GITHUB_BASE = "https://raw.githubusercontent.com/radot1530-ai/ns4supportplus/main/questions/";
 const QUESTIONS_PER_DAY = 5;
 const REWARD_COINS = 20;
 const REWARD_XP = 15;
