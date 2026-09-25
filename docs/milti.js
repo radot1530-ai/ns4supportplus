@@ -20,7 +20,7 @@ const auth = firebase.auth();
   ⚠️ RANPLASE SA A AK PWÒP GITHUB REPO OU
      (kote quiz.json ak defi.json ye)
 =========================================================*/
-const GITHUB_BASE = "https://raw.githubusercontent.com/METE_NON_ITILIZATE_OU/METE_NON_REPO_OU/main/questions/";
+const GITHUB_BASE = "https://raw.githubusercontent.com/radot1530-ai/ns4supportplus/main/questions/";
 
 const WINNER_XP = 20;
 const LOSER_XP = 5;
