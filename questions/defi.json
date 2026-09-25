@@ -1,28 +1,264 @@
 {
   "questions": [
     {
-      "id": "q1",
+      "id": "d001",
       "matiere": "Matematik",
-      "difficulte": "fasil",
-      "question": "Ki valè lim(x -> 0) de sin(x)/x ?",
-      "options": ["0", "1", "Defini", "Enfini"],
-      "reponse": "1"
+      "difficulte": "fasi",
+      "question": "10 - 4 egal a konbyen?",
+      "options": [
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "reponse": 2
     },
     {
-      "id": "q2",
+      "id": "d002",
+      "matiere": "Matematik",
+      "difficulte": "nòmal",
+      "question": "Ki valè 3x si x = 4?",
+      "options": [
+        "7",
+        "12",
+        "34",
+        "43"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "d003",
+      "matiere": "Matematik",
+      "difficulte": "difisil",
+      "question": "Ki mwayèn valè sa yo: 3, 5, 7, 9, 11?",
+      "options": [
+        "5",
+        "7",
+        "9",
+        "6"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "d004",
       "matiere": "Fizik",
-      "difficulte": "mwayen",
-      "question": "Ki formule pou calculate fòs Newton an?",
-      "options": ["F = m * v", "F = m * a", "F = m / a", "F = a / m"],
-      "reponse": "F = m * a"
+      "difficulte": "fasi",
+      "question": "Ki inite yo itilize pou mezire yon distans?",
+      "options": [
+        "Kilogram",
+        "Mèt",
+        "Segond",
+        "Litè"
+      ],
+      "reponse": 1
     },
     {
-      "id": "q3",
-      "matiere": "Chimi",
-      "difficulte": "fasil",
-      "question": "Ki formule chimik dlo?",
-      "options": ["CO2", "H2O", "NaCl", "O2"],
-      "reponse": "H2O"
+      "id": "d005",
+      "matiere": "Fizik",
+      "difficulte": "nòmal",
+      "question": "F = m × a. Si m=2kg ak a=3m/s², konbyen F ye?",
+      "options": [
+        "5N",
+        "6N",
+        "1N",
+        "23N"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "d006",
+      "matiere": "Fizik",
+      "difficulte": "difisil",
+      "question": "Ki pati yon ond ki reprezante wotè li?",
+      "options": [
+        "Frekans",
+        "Anplitid",
+        "Longèdonn",
+        "Peryòd"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "d007",
+      "matiere": "Chimik",
+      "difficulte": "fasi",
+      "question": "Ki senbòl chimik pou oksijèn?",
+      "options": [
+        "O",
+        "Ox",
+        "O2",
+        "Og"
+      ],
+      "reponse": 0
+    },
+    {
+      "id": "d008",
+      "matiere": "Chimik",
+      "difficulte": "nòmal",
+      "question": "Ki pati nan yon atòm ki gen chaj pozitif?",
+      "options": [
+        "Elektwon",
+        "Pwoton",
+        "Neutwon",
+        "Ion"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "d009",
+      "matiere": "Chimik",
+      "difficulte": "difisil",
+      "question": "Ki eleman ki pi lejè nan tablo peryodik la?",
+      "options": [
+        "Elyòm",
+        "Idwojèn",
+        "Litiyòm",
+        "Kabòn"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "d010",
+      "matiere": "Syans Lavi",
+      "difficulte": "fasi",
+      "question": "Ki pati kò a nou itilize pou respire?",
+      "options": [
+        "Kè",
+        "Poumon",
+        "Fwa",
+        "Rat"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "d011",
+      "matiere": "Syans Lavi",
+      "difficulte": "nòmal",
+      "question": "Ki gaz kò nou ekspire (voye deyò)?",
+      "options": [
+        "Oksijèn",
+        "Azòt",
+        "Kabòn dyoksid",
+        "Idwojèn"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "d012",
+      "matiere": "Syans Lavi",
+      "difficulte": "difisil",
+      "question": "Ki non pwosesis kote yon selil divize an de selil idantik?",
+      "options": [
+        "Miyoz",
+        "Mitoz",
+        "Fotosentèz",
+        "Fèmantasyon"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "d013",
+      "matiere": "Matematik",
+      "difficulte": "fasi",
+      "question": "Ki mwatye 50?",
+      "options": [
+        "20",
+        "25",
+        "30",
+        "15"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "d014",
+      "matiere": "Matematik",
+      "difficulte": "nòmal",
+      "question": "Rezoud: x + 7 = 20",
+      "options": [
+        "11",
+        "12",
+        "13",
+        "14"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "d015",
+      "matiere": "Fizik",
+      "difficulte": "fasi",
+      "question": "Ki fòs ki fè yon boul tonbe atè?",
+      "options": [
+        "Fwotman",
+        "Gravitasyon",
+        "Presyon",
+        "Tansyon"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "d016",
+      "matiere": "Chimik",
+      "difficulte": "fasi",
+      "question": "Ki eta dlo ye lè li tounen glas?",
+      "options": [
+        "Likid",
+        "Gaz",
+        "Solid",
+        "Plasma"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "d017",
+      "matiere": "Syans Lavi",
+      "difficulte": "fasi",
+      "question": "Ki gwoup sanksyon ki ka resevwa san bay tout lòt gwoup?",
+      "options": [
+        "O negatif",
+        "AB pozitif",
+        "A negatif",
+        "B pozitif"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "d018",
+      "matiere": "Matematik",
+      "difficulte": "difisil",
+      "question": "Ki rezilta 2³ + 3²?",
+      "options": [
+        "17",
+        "15",
+        "13",
+        "19"
+      ],
+      "reponse": 0
+    },
+    {
+      "id": "d019",
+      "matiere": "Fizik",
+      "difficulte": "nòmal",
+      "question": "Ki inite yo itilize pou mezire kouran elektrik?",
+      "options": [
+        "Volt",
+        "Ohm",
+        "Anpè",
+        "Wat"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "d020",
+      "matiere": "Chimik",
+      "difficulte": "nòmal",
+      "question": "Ki tip reyaksyon ki degaje chalè?",
+      "options": [
+        "Andotèmik",
+        "Egzotèmik",
+        "Netralizasyon sèlman",
+        "Ionizasyon"
+      ],
+      "reponse": 1
     }
   ]
 }
