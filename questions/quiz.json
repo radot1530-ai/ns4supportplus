@@ -1,0 +1,784 @@
+{
+  "questions": [
+    {
+      "id": "q001",
+      "matiere": "Matematik",
+      "difficulte": "fasi",
+      "question": "Konbyen 7 + 8 fè?",
+      "options": [
+        "13",
+        "14",
+        "15",
+        "16"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q002",
+      "matiere": "Matematik",
+      "difficulte": "fasi",
+      "question": "Ki rezilta 9 × 6?",
+      "options": [
+        "45",
+        "52",
+        "54",
+        "56"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q003",
+      "matiere": "Matematik",
+      "difficulte": "fasi",
+      "question": "100 ÷ 4 egal a konbyen?",
+      "options": [
+        "20",
+        "25",
+        "30",
+        "40"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q004",
+      "matiere": "Matematik",
+      "difficulte": "fasi",
+      "question": "Ki fraksyon ki pi gwo: 0.5 oswa 1/3?",
+      "options": [
+        "0.5",
+        "1/3",
+        "Yo egal",
+        "Pa gen ase enfòmasyon"
+      ],
+      "reponse": 0
+    },
+    {
+      "id": "q005",
+      "matiere": "Matematik",
+      "difficulte": "fasi",
+      "question": "12 kare (12²) egal a konbyen?",
+      "options": [
+        "124",
+        "144",
+        "134",
+        "154"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q006",
+      "matiere": "Matematik",
+      "difficulte": "nòmal",
+      "question": "Si 2x + 5 = 15, ki valè x?",
+      "options": [
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q007",
+      "matiere": "Matematik",
+      "difficulte": "nòmal",
+      "question": "Ki fòm ekri fraksyon 3/4 an pousantaj?",
+      "options": [
+        "34%",
+        "75%",
+        "43%",
+        "57%"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q008",
+      "matiere": "Matematik",
+      "difficulte": "nòmal",
+      "question": "Rezoud: 3(x - 2) = 9. Ki valè x?",
+      "options": [
+        "3",
+        "5",
+        "7",
+        "9"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q009",
+      "matiere": "Matematik",
+      "difficulte": "nòmal",
+      "question": "Ki pant liy ki gen ekwasyon y = 2x + 3?",
+      "options": [
+        "2",
+        "3",
+        "5",
+        "-2"
+      ],
+      "reponse": 0
+    },
+    {
+      "id": "q010",
+      "matiere": "Matematik",
+      "difficulte": "nòmal",
+      "question": "Konbyen 5! (5 faktoryèl) egal?",
+      "options": [
+        "20",
+        "60",
+        "100",
+        "120"
+      ],
+      "reponse": 3
+    },
+    {
+      "id": "q011",
+      "matiere": "Matematik",
+      "difficulte": "difisil",
+      "question": "Nan yon triyang rektang, de kote yo se 3 ak 4. Ki longè ipotenuz la?",
+      "options": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "reponse": 0
+    },
+    {
+      "id": "q012",
+      "matiere": "Matematik",
+      "difficulte": "difisil",
+      "question": "Ki sifas yon sèk ki gen reyon 7 (sèvi ak π≈22/7)?",
+      "options": [
+        "154",
+        "144",
+        "134",
+        "164"
+      ],
+      "reponse": 0
+    },
+    {
+      "id": "q013",
+      "matiere": "Matematik",
+      "difficulte": "difisil",
+      "question": "Rezoud x² - 5x + 6 = 0. Ki de solisyon yo?",
+      "options": [
+        "2 ak 3",
+        "1 ak 6",
+        "-2 ak -3",
+        "2 ak -3"
+      ],
+      "reponse": 0
+    },
+    {
+      "id": "q014",
+      "matiere": "Matematik",
+      "difficulte": "difisil",
+      "question": "Ki volim yon kib ki gen kote 4 santimèt?",
+      "options": [
+        "16 cm³",
+        "48 cm³",
+        "64 cm³",
+        "32 cm³"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q015",
+      "matiere": "Matematik",
+      "difficulte": "difisil",
+      "question": "De ang nan yon triyang se 50° ak 60°. Ki mezi twazyèm ang lan?",
+      "options": [
+        "60°",
+        "70°",
+        "80°",
+        "90°"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q016",
+      "matiere": "Fizik",
+      "difficulte": "fasi",
+      "question": "Ki inite yo itilize pou mezire fòs?",
+      "options": [
+        "Kilogram",
+        "Newton",
+        "Mèt",
+        "Segond"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q017",
+      "matiere": "Fizik",
+      "difficulte": "fasi",
+      "question": "Ki pi lou: 1kg fè oswa 1kg koton?",
+      "options": [
+        "Fè a pi lou",
+        "Koton an pi lou",
+        "Yo menm pwa",
+        "Enposib pou konnen"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q018",
+      "matiere": "Fizik",
+      "difficulte": "fasi",
+      "question": "Ki fòm enèji solèy la voye ba nou sitou?",
+      "options": [
+        "Enèji chimik",
+        "Enèji limyè",
+        "Enèji nikleyè",
+        "Enèji mekanik"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q019",
+      "matiere": "Fizik",
+      "difficulte": "fasi",
+      "question": "Ki pwopozisyon ki VRE?",
+      "options": [
+        "Limyè pi rapid pase son",
+        "Son pi rapid pase limyè",
+        "Limyè ak son gen menm vitès",
+        "Nan vid, son vwayaje pi vit"
+      ],
+      "reponse": 0
+    },
+    {
+      "id": "q020",
+      "matiere": "Fizik",
+      "difficulte": "fasi",
+      "question": "Ki aparèy yo itilize pou mezire tanperati?",
+      "options": [
+        "Balans",
+        "Tèmomèt",
+        "Baromèt",
+        "Kwonomèt"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q021",
+      "matiere": "Fizik",
+      "difficulte": "nòmal",
+      "question": "v = d/t. Si yon machin fè 150km nan 3è, ki vitès li?",
+      "options": [
+        "30km/h",
+        "40km/h",
+        "50km/h",
+        "60km/h"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q022",
+      "matiere": "Fizik",
+      "difficulte": "nòmal",
+      "question": "Ki lwa ki di: pou chak aksyon gen yon reyaksyon egal e opoze?",
+      "options": [
+        "Lwa Newton 1",
+        "Lwa Newton 2",
+        "Lwa Newton 3",
+        "Lwa gravitasyon inivèsèl"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q023",
+      "matiere": "Fizik",
+      "difficulte": "nòmal",
+      "question": "Ki inite SI pou enèji?",
+      "options": [
+        "Wat",
+        "Joul",
+        "Newton",
+        "Volt"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q024",
+      "matiere": "Fizik",
+      "difficulte": "nòmal",
+      "question": "Ki fòs ki fè yon objè tonbe sou tè a?",
+      "options": [
+        "Fòs elektrik",
+        "Fòs mayetik",
+        "Gravitasyon",
+        "Fòs fwotman"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q025",
+      "matiere": "Fizik",
+      "difficulte": "nòmal",
+      "question": "Yon kò gen mas 10kg (g=10m/s²). Ki pwa li?",
+      "options": [
+        "10N",
+        "50N",
+        "100N",
+        "1000N"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q026",
+      "matiere": "Fizik",
+      "difficulte": "difisil",
+      "question": "Yon objè mas 5kg gen yon aksè 2m/s². Ki fòs ki aplike sou li (F=ma)?",
+      "options": [
+        "7N",
+        "10N",
+        "2.5N",
+        "15N"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q027",
+      "matiere": "Fizik",
+      "difficulte": "difisil",
+      "question": "Ki longèdonn ki karakterize limyè vizib la?",
+      "options": [
+        "Rayon X",
+        "Ondonn radyo",
+        "Ant 400 ak 700 nanomèt",
+        "Ultravyolèt"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q028",
+      "matiere": "Fizik",
+      "difficulte": "difisil",
+      "question": "Ki relasyon ki genyen ant tansyon (V), kouran (I) ak rezistans (R)?",
+      "options": [
+        "V = I / R",
+        "V = I × R",
+        "V = R / I",
+        "I = V × R"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q029",
+      "matiere": "Fizik",
+      "difficulte": "difisil",
+      "question": "Konbyen chalè li pran pou chofe 1kg dlo 1°C?",
+      "options": [
+        "1 joul",
+        "4.18 joul",
+        "10 joul",
+        "100 joul"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q030",
+      "matiere": "Fizik",
+      "difficulte": "difisil",
+      "question": "Yon resò gen konstant K=200N/m e li detire 0.1m. Ki fòs ki aplike (F=Kx)?",
+      "options": [
+        "10N",
+        "20N",
+        "200N",
+        "2000N"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q031",
+      "matiere": "Chimik",
+      "difficulte": "fasi",
+      "question": "Ki senbòl chimik pou dlo?",
+      "options": [
+        "O2",
+        "H2O",
+        "CO2",
+        "NaCl"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q032",
+      "matiere": "Chimik",
+      "difficulte": "fasi",
+      "question": "Anviwon konbyen eleman ki genyen nan tablo peryodik la?",
+      "options": [
+        "50",
+        "78",
+        "118",
+        "200"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q033",
+      "matiere": "Chimik",
+      "difficulte": "fasi",
+      "question": "Ki eta matyè ki gen fòm fiks ak volim fiks?",
+      "options": [
+        "Likid",
+        "Gaz",
+        "Solid",
+        "Plasma"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q034",
+      "matiere": "Chimik",
+      "difficulte": "fasi",
+      "question": "Ki gaz nou respire ki enpòtan pou lavi?",
+      "options": [
+        "Azòt",
+        "Oksijèn",
+        "Kabòn dyoksid",
+        "Idwojèn"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q035",
+      "matiere": "Chimik",
+      "difficulte": "fasi",
+      "question": "Ki senbòl chimik pou sèl kwit manje?",
+      "options": [
+        "NaCl",
+        "KCl",
+        "CaCl2",
+        "NaOH"
+      ],
+      "reponse": 0
+    },
+    {
+      "id": "q036",
+      "matiere": "Chimik",
+      "difficulte": "nòmal",
+      "question": "Ki chaj yon elektwon genyen?",
+      "options": [
+        "Pozitif",
+        "Negatif",
+        "Net",
+        "Varyab"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q037",
+      "matiere": "Chimik",
+      "difficulte": "nòmal",
+      "question": "Ki pH yon sibstans nèt (ni asid ni baz)?",
+      "options": [
+        "0",
+        "7",
+        "14",
+        "10"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q038",
+      "matiere": "Chimik",
+      "difficulte": "nòmal",
+      "question": "Ki eleman ki gen senbòl 'Fe'?",
+      "options": [
+        "Fliyò",
+        "Fè",
+        "Fransyòm",
+        "Feryòm"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q039",
+      "matiere": "Chimik",
+      "difficulte": "nòmal",
+      "question": "Nan yon konbisyon, ki gaz ki toujou patisipe?",
+      "options": [
+        "Azòt",
+        "Oksijèn",
+        "Idwojèn",
+        "Elyòm"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q040",
+      "matiere": "Chimik",
+      "difficulte": "nòmal",
+      "question": "Konbyen pwoton yon atòm idwojèn genyen?",
+      "options": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q041",
+      "matiere": "Chimik",
+      "difficulte": "difisil",
+      "question": "Ki tip lyezon chimik ki fòme lè de atòm pataje elektwon?",
+      "options": [
+        "Lyezon ionik",
+        "Lyezon kovalan",
+        "Lyezon metalik",
+        "Lyezon idwojèn"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q042",
+      "matiere": "Chimik",
+      "difficulte": "difisil",
+      "question": "Ki fòmil chimik pou glikoz?",
+      "options": [
+        "C6H12O6",
+        "C2H5OH",
+        "CH4",
+        "NaHCO3"
+      ],
+      "reponse": 0
+    },
+    {
+      "id": "q043",
+      "matiere": "Chimik",
+      "difficulte": "difisil",
+      "question": "Eleman ki nan menm kolòn tablo peryodik la gen menm kantite...?",
+      "options": [
+        "Neutwon",
+        "Elektwon nan dènye kouch",
+        "Pwoton",
+        "Izotòp"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q044",
+      "matiere": "Chimik",
+      "difficulte": "difisil",
+      "question": "Ki pwosesis ki chanje yon likid an gaz?",
+      "options": [
+        "Kondansasyon",
+        "Vaporizasyon",
+        "Solidifikasyon",
+        "Fizyon"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q045",
+      "matiere": "Chimik",
+      "difficulte": "difisil",
+      "question": "Ki balans korèk pou reyaksyon H2 + O2 → H2O?",
+      "options": [
+        "H2 + O2 → H2O",
+        "2H2 + O2 → 2H2O",
+        "H2 + 2O2 → H2O2",
+        "3H2 + O2 → 2H2O"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q046",
+      "matiere": "Syans Lavi",
+      "difficulte": "fasi",
+      "question": "Ki pati nan kò moun ki ponpe san?",
+      "options": [
+        "Poumon",
+        "Kè",
+        "Fwa",
+        "Ren"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q047",
+      "matiere": "Syans Lavi",
+      "difficulte": "fasi",
+      "question": "Ki òganit nan selil la ki pwodwi enèji?",
+      "options": [
+        "Nikleyis",
+        "Mitokondri",
+        "Ribozòm",
+        "Vakwòl"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q048",
+      "matiere": "Syans Lavi",
+      "difficulte": "fasi",
+      "question": "Ki gwoup sanksyon ki ka bay san bay tout lòt gwoup?",
+      "options": [
+        "A",
+        "B",
+        "AB",
+        "O negatif"
+      ],
+      "reponse": 3
+    },
+    {
+      "id": "q049",
+      "matiere": "Syans Lavi",
+      "difficulte": "fasi",
+      "question": "An mwayèn, konbyen zo ki genyen nan kò yon adilt?",
+      "options": [
+        "106",
+        "206",
+        "306",
+        "406"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q050",
+      "matiere": "Syans Lavi",
+      "difficulte": "fasi",
+      "question": "Ki pati plant ki fè fotosentèz sitou?",
+      "options": [
+        "Rasin",
+        "Tij",
+        "Fèy",
+        "Flè"
+      ],
+      "reponse": 2
+    },
+    {
+      "id": "q051",
+      "matiere": "Syans Lavi",
+      "difficulte": "nòmal",
+      "question": "Ki pwosesis plant yo pwodwi pwòp manje yo ak limyè solèy?",
+      "options": [
+        "Respirasyon",
+        "Fotosentèz",
+        "Dijesyon",
+        "Transpirasyon"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q052",
+      "matiere": "Syans Lavi",
+      "difficulte": "nòmal",
+      "question": "Ki sistèm nan kò moun ki responsab pou konbat enfeksyon?",
+      "options": [
+        "Sistèm sikilatwa",
+        "Sistèm iminitè",
+        "Sistèm nève",
+        "Sistèm dijestif"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q053",
+      "matiere": "Syans Lavi",
+      "difficulte": "nòmal",
+      "question": "Ki molekil ki pote enfòmasyon jenetik nan selil yo?",
+      "options": [
+        "ARN",
+        "ADN",
+        "Pwoteyin",
+        "Lipid"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q054",
+      "matiere": "Syans Lavi",
+      "difficulte": "nòmal",
+      "question": "Nan ki pati selil la respirasyon selilè fèt sitou?",
+      "options": [
+        "Nikleyis",
+        "Mitokondri",
+        "Miyoz",
+        "Mitoz"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q055",
+      "matiere": "Syans Lavi",
+      "difficulte": "nòmal",
+      "question": "Ki tip selil ki pa gen nikleyis (egzanp: bakteri)?",
+      "options": [
+        "Selil ekaryòt",
+        "Selil pwokaryòt",
+        "Selil animal",
+        "Selil vejetal"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q056",
+      "matiere": "Syans Lavi",
+      "difficulte": "difisil",
+      "question": "Ki pwosesis divizyon selilè ki pwodwi gamèt (espèrm ak ovil)?",
+      "options": [
+        "Mitoz",
+        "Miyoz",
+        "Fotosentèz",
+        "Fèmantasyon"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q057",
+      "matiere": "Syans Lavi",
+      "difficulte": "difisil",
+      "question": "Ki sa lwa Mendel eksplike prensipalman?",
+      "options": [
+        "Konsèvasyon enèji",
+        "Eritaj karaktè jenetik",
+        "Seleksyon natirèl",
+        "Evolisyon espès"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q058",
+      "matiere": "Syans Lavi",
+      "difficulte": "difisil",
+      "question": "Nan yon chèn alimantè, ki wòl yon 'konsomatè prensipal' jwe?",
+      "options": [
+        "Li fè fotosentèz",
+        "Li manje plant",
+        "Li manje lòt animal",
+        "Li dekonpoze matyè"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q059",
+      "matiere": "Syans Lavi",
+      "difficulte": "difisil",
+      "question": "Ki gaz plant yo degaje pandan fotosentèz?",
+      "options": [
+        "Kabòn dyoksid",
+        "Oksijèn",
+        "Azòt",
+        "Metàn"
+      ],
+      "reponse": 1
+    },
+    {
+      "id": "q060",
+      "matiere": "Syans Lavi",
+      "difficulte": "difisil",
+      "question": "Ki pati selil la ki kontwole tout aktivite selil la?",
+      "options": [
+        "Mitokondri",
+        "Nikleyis",
+        "Ribozòm",
+        "Manbràn selilè"
+      ],
+      "reponse": 1
+    }
+  ]
+}
