@@ -159,7 +159,7 @@
           if (data[deviceId]) isDeviceAllowed = true;
       }
 
-      if (!isDeviceAllowed && sessionsCount >= 3) {
+      if (!isDeviceAllowed && sessionsCount >= 4) {
           await auth.signOut();
           alert("❌ Ou rive nan limit 3 aparèy la. Tanpri dekonekte sou yon lòt aparèy anvan.");
           btn.disabled = false; 
