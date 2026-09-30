@@ -1,13 +1,14 @@
 const DB_NAME = 'ns4-offline-db';
 const DB_VERSION = 1;
 const STORE_NAME = 'files';
-const MANIFEST_VERSION = 'v5'; // 🔵 monté (ads.js réécrit + nav.js)
+const MANIFEST_VERSION = 'v5';
 
 const BASE_PATH = new URL('.', self.location).pathname;
 
+// 🔵 Noms de fichiers corrigés (style.css, paramet.html)
 const FILE_NAMES = [
   'index.html',
-  'ads.js', 'nav.js',       // 🔵 pub + bouton retour
+  'ads.js', 'nav.js',
   'defi.html', 'defi.js',
   'exam.html',
   'fòmil.html',
@@ -19,12 +20,12 @@ const FILE_NAMES = [
   'ns4-content.js',
   'ns4-correction.js',
   'ns4-math.js',
-  'paramet.js', 'paramèt.html',
+  'paramet.js', 'paramet.html', // Corrigé (sans accent pour éviter les bugs WebView)
   'pwofil.html', 'pwofil.js',
   'quiz.html', 'quiz.js',
   'ranking.html', 'ranking.js',
   'stats.js',
-  'tyle.css',
+  'style.css',                  // Corrigé (style.css au lieu de tyle.css)
   'vocab.html'
 ];
 
@@ -63,7 +64,6 @@ async function idbGet(key) {
   });
 }
 
-// 🔵 Envoie un message à toutes les pages ouvertes (pour le popup de progression)
 async function broadcast(msg) {
   const clientsList = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
   clientsList.forEach((client) => client.postMessage(msg));
@@ -101,15 +101,24 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim().then(() => downloadAllFiles()));
+  // 🔵 Ne relance pas downloadAllFiles() ici pour éviter les téléchargements en double
+  event.waitUntil(self.clients.claim());
 });
 
+// 🔵 Stratégie optimisée : Chercher d'abord dans le Cache / IndexedDB
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
   event.respondWith((async () => {
+    // 1. Regarder si le fichier est déjà dans IndexedDB
+    const cached = await idbGet(url.pathname);
+    if (cached) {
+      return new Response(cached.body, { headers: { 'Content-Type': cached.contentType } });
+    }
+
+    // 2. Sinon, essayer de le récupérer en réseau
     try {
       const res = await fetch(event.request);
       if (res && res.ok) {
@@ -120,9 +129,7 @@ self.addEventListener('fetch', (event) => {
       }
       return res;
     } catch (e) {
-      const cached = await idbGet(url.pathname);
-      if (cached) return new Response(cached.body, { headers: { 'Content-Type': cached.contentType } });
-
+      // 3. Repli si aucune donnée
       if (event.request.mode === 'navigate') {
         const fallback = await idbGet(BASE_PATH + 'index.html');
         if (fallback) return new Response(fallback.body, { headers: { 'Content-Type': fallback.contentType } });
