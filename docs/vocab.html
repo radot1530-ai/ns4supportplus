@@ -142,7 +142,7 @@ body{font-family:"Inter",sans-serif;background:var(--page-bg);color:var(--text);
     <div class="chk">✓</div>
     <p>Chak nòt se yon definisyon oswa yon nosyon debaz ekri klè an Kreyòl, tire soti nan ansyen egzamen ak pwogram ofisyèl MENFP a. Tout bagay ka mache san koneksyon!</p>
   </div>
-  
+
   <div class="section-label">Matyè yo</div>
   <div id="subjectsGrid" class="subjects"></div>
 </div>
@@ -214,6 +214,7 @@ const SUBJECTS = [
 ];
 
 let currentSubject = null;
+if (window.NS4Ads) NS4Ads.maybeInterstitial('vocab_exit');
 let currentNotes = {};   // { noteId: noteObject }
 let pendingUnlockId = null;
 
@@ -262,16 +263,16 @@ function showToast(msg){
 function renderSubjects(){
   const grid = document.getElementById('subjectsGrid');
   grid.innerHTML = '';
-  
+
   SUBJECTS.forEach(s => {
     const card = document.createElement('div');
     card.className = 'subject-card';
     card.onclick = () => openSubject(s);
-    
+
     // Check cached count if available
     const cached = getCachedSubjectNotes(s.id);
     const countText = cached ? Object.keys(cached).length + ' nòt' : '...';
-    
+
     card.innerHTML = `
       <div class="subject-icon">${s.icon}</div>
       <div class="subject-name">${s.name}</div>
@@ -355,7 +356,7 @@ function renderNotes(){
   const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
   const unlocked = getUnlocked();
   const user = getUser();
-  
+
   const entries = Object.entries(currentNotes).filter(([id, n]) => {
     const title = (n.titre || '').toLowerCase();
     const def = (n.definition || '').toLowerCase();
@@ -400,7 +401,7 @@ function escapeHtml(s){
 /* ================= ACTION: PATAJE YON LESSON / NÒT ================= */
 function shareNote(titre, definition) {
   const shareText = `🎓 NS4 SUPPORT+ | Nòt Vokabilè:\n\n📌 *${titre}*\n📖 ${definition}\n\nTelechaje aplikasyon an pou kouri prepare BAC ou!`;
-  
+
   if (window.AndroidShare) { // 🔵 ajouté
     window.AndroidShare.shareText('NS4 Support+ - ' + titre, shareText, '');
   } else if (navigator.share) {
@@ -503,7 +504,7 @@ function unlockWithCoins(){
   user.coins -= 15; 
   saveUser(user); 
   refreshCoinDisplay();
-  
+
   addUnlocked(pendingUnlockId);
   showToast('Nòt sa a debloke ak siksè! ✅');
   closeUnlock(); 
@@ -526,17 +527,17 @@ function downloadNotes(){
   if(!currentSubject) return;
   const loading = document.getElementById('loading');
   loading.classList.remove('hidden');
-  
+
   setTimeout(()=>{
     const user = getUser();
     const unlocked = getUnlocked();
     let text = `=========================================\nNS4 SUPPORT+ — ${currentSubject.name.toUpperCase()}\n=========================================\n\n`;
-    
+
     let count = 0;
     Object.values(currentNotes).forEach(n => {
       const isLocked = n.premium && !isPro(user) && !unlocked.includes(n.id);
       if(isLocked) return; 
-      
+
       count++;
       text += `${count}. ${n.titre}\n`;
       text += `Definisyon: ${n.definition}\n`;
@@ -555,7 +556,7 @@ function downloadNotes(){
     a.href = URL.createObjectURL(blob);
     a.download = `NS4_${currentSubject.id}_vokabile.txt`;
     a.click();
-    
+
     loading.classList.add('hidden');
     showToast("Fichye nòt yo telechaje ak siksè! 📄");
   }, 500);
