@@ -1,7 +1,7 @@
 const DB_NAME = 'ns4-offline-db';
 const DB_VERSION = 1;
 const STORE_NAME = 'files';
-const MANIFEST_VERSION = 'v5';
+const MANIFEST_VERSION = 'v6';
 
 const BASE_PATH = new URL('.', self.location).pathname;
 
