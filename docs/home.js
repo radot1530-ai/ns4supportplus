@@ -550,3 +550,8 @@ whenReady(() => {
     // Si PRO ekspire pandan aplikasyon an ouvè, mete UI a ajou chak minit
     setInterval(() => { if (localUser) updateDOMWithUserData(localUser); }, 60000);
 });
+
+
+// ADS
+
+window.addEventListener("load", () => { if (window.NS4Ads) NS4Ads.maybeInterstitial("home"); });
