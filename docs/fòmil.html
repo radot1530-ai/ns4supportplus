@@ -226,6 +226,7 @@ function handleBack(){
     document.getElementById('pageTitle').innerText='Fòmil & Egzèsis';
     document.getElementById('pageSub').innerText='Chwazi yon chapit';
     currentChapter=null;
+    if (window.NS4Ads) NS4Ads.maybeInterstitial('fomil_exit');
   } else {
     window.location.href='home.html';
   }
@@ -324,8 +325,8 @@ window.addEventListener('load', () => {
     const _open = openChapter;
     openChapter = function (chapter) { NS4Ads.requireNoteAccess("fomil", () => _open(chapter)); };
   })();
-  
-  
+
+
   /* ================= DAILY WIDGET (Fòmil) ================= */
 function loadDailyFormulaWidget() {
   const todayKey = new Date().toISOString().slice(0, 10);
