@@ -120,14 +120,22 @@
     });
   }
   // À appeler aux pauses naturelles (fin de leçon, fin de match, fin de journée de défi,
-  // ouverture de la home...). Compteur "n" partagé entre toutes les pages : la 1re pause
-  // de la session affiche TOUJOURS une pub (utile pour tester), ensuite 1 pause sur N.
-  function maybeInterstitial(/* reason */) {
+  // ouverture de la home...). Compteur SÉPARÉ par page ("reason") : si tout partageait un
+  // seul compteur, le retour fréquent vers home.html (le bouton retour y ramène toujours)
+  // "mangeait" systématiquement le tour qui aurait dû revenir à quiz/milti/defi — un retour
+  // sur deux pile. La 1re pause de chaque page affiche TOUJOURS une pub (utile pour tester),
+  // ensuite 1 pause sur N pour cette page. Le délai minimum (lastInter), lui, reste partagé
+  // pour ne jamais montrer deux pubs coup sur coup, peu importe la page d'origine.
+  function maybeInterstitial(reason) {
     if (!inApp()) return;
+    const key = reason || "generic";
     const tier = isPro() ? NS4_ADS_CFG.pro : NS4_ADS_CFG.free;
     const s = load();
-    s.n = (s.n || 0) + 1; save(s);
-    if (s.n !== 1 && (s.n - 1) % tier.everyN !== 0) return;
+    s.counts = s.counts || {};
+    s.counts[key] = (s.counts[key] || 0) + 1;
+    save(s);
+    const n = s.counts[key];
+    if (n !== 1 && (n - 1) % tier.everyN !== 0) return;
     if (Date.now() - (s.lastInter || 0) < tier.minGapMs) return;
     setTimeout(showInterstitial, 800);
   }
