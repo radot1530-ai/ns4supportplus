@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:alpha="0.0"
-            android:text="Global Plis +∞"
+            android:text="Global Plis +∞ (Lazarre Patrice)"
             android:textColor="#777777"
             android:textSize="12sp" />
 
