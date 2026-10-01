@@ -4,36 +4,70 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#24439a"
+    android:background="@drawable/widget_background"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/widget_tag"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#FFC107"
-        android:textSize="11sp"
-        android:textStyle="bold"
-        android:text="💡 NS4 Support+"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_tag"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#FFC107"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:text="💡 NS4 Support+"/>
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:alpha="0.9"
+            android:src="@mipmap/ic_launcher"
+            android:contentDescription="NS4 Support+"/>
+    </LinearLayout>
+
+    <View
+        android:layout_width="28dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="8dp"
+        android:background="#FFC107"/>
 
     <TextView
         android:id="@+id/widget_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:textColor="#FFFFFF"
-        android:textSize="15sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:maxLines="2"
-        android:ellipsize="end"/>
+        android:ellipsize="end"
+        android:lineSpacingExtra="1dp"/>
 
     <TextView
         android:id="@+id/widget_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:textColor="#E8ECF7"
-        android:textSize="12sp"
+        android:textColor="#D7DEF2"
+        android:textSize="12.5sp"
         android:maxLines="3"
-        android:ellipsize="end"/>
+        android:ellipsize="end"
+        android:lineSpacingExtra="1dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="#FFC107"
+        android:textSize="10.5sp"
+        android:textStyle="bold"
+        android:text="Touche pou kontinye →"/>
+
 </LinearLayout>
