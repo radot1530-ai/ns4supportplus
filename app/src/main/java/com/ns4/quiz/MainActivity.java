@@ -22,11 +22,13 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.appopen.AppOpenAd;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.rewarded.RewardedAd;
@@ -39,6 +41,14 @@ public class MainActivity extends AppCompatActivity {
     RewardedAd rewardedAd;
     InterstitialAd interstitialAd;
 
+    // ---------- App Open ----------
+    AppOpenAd appOpenAd;
+    private long appOpenLoadTime = 0;
+    private long lastAppOpenShown = 0;
+    private boolean isShowingAppOpen = false;
+    private boolean skipNextAppOpen = true;   // pas de pub au tout premier lancement
+    private boolean wasInBackground = false;
+
     private ValueCallback<Uri[]> filePathCallback;
     private ActivityResultLauncher<Intent> fileChooserLauncher;
     private long lastBackPressTime = 0;
@@ -46,6 +56,11 @@ public class MainActivity extends AppCompatActivity {
     // ⚠️ IDs de TEST Google — remplace par tes vrais IDs une fois validé
     private static final String REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917";
     private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
+    private static final String APP_OPEN_AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921";
+
+    private static final long APP_OPEN_MAX_AGE_MS = 4 * 60 * 60 * 1000L;  // une pub chargée reste valide 4 h
+    private static final long APP_OPEN_COOLDOWN_MS = 3 * 60 * 1000L;      // minimum 3 min entre deux App Open
+    private static final String PREFS_ADS = "ns4_ads_prefs";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
         loadRewardedAd();
         loadInterstitialAd();
+        loadAppOpenAd();
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -99,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType("image/*");
+                skipNextAppOpen = true;   // le retour du sélecteur de photo ne déclenche pas de pub
                 fileChooserLauncher.launch(Intent.createChooser(intent, "Chwazi yon foto"));
                 return true;
             }
@@ -147,13 +164,99 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // ---------- Pont : publicités (rewarded + interstitiel + bannière) ----------
+    // ---------- App Open : logique ----------
+    // 🛡️ Statut PRO mémorisé côté natif (envoyé par la page via AndroidAds.setProStatus)
+    private boolean isProUser() {
+        return getSharedPreferences(PREFS_ADS, MODE_PRIVATE).getBoolean("is_pro", false);
+    }
+
+    private boolean isAppOpenAvailable() {
+        return appOpenAd != null
+            && (System.currentTimeMillis() - appOpenLoadTime) < APP_OPEN_MAX_AGE_MS;
+    }
+
+    private void loadAppOpenAd() {
+        if (isProUser() || appOpenAd != null) return;   // PRO : on ne charge même pas la pub
+        AppOpenAd.load(this, APP_OPEN_AD_UNIT_ID, new AdRequest.Builder().build(),
+            new AppOpenAd.AppOpenAdLoadCallback() {
+                @Override
+                public void onAdLoaded(AppOpenAd ad) {
+                    appOpenAd = ad;
+                    appOpenLoadTime = System.currentTimeMillis();
+                }
+
+                @Override
+                public void onAdFailedToLoad(LoadAdError error) {
+                    appOpenAd = null;
+                }
+            });
+    }
+
+    private void showAppOpenIfAllowed() {
+        if (isProUser()) return;                                                       // 🛡️ PRO protégé
+        if (isShowingAppOpen) return;
+        if (System.currentTimeMillis() - lastAppOpenShown < APP_OPEN_COOLDOWN_MS) return;
+        if (!isAppOpenAvailable()) {
+            appOpenAd = null;
+            loadAppOpenAd();
+            return;
+        }
+
+        appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+            @Override
+            public void onAdShowedFullScreenContent() {
+                isShowingAppOpen = true;
+            }
+
+            @Override
+            public void onAdDismissedFullScreenContent() {
+                isShowingAppOpen = false;
+                appOpenAd = null;
+                lastAppOpenShown = System.currentTimeMillis();
+                skipNextAppOpen = true;   // le retour de la pub ne doit pas en redéclencher une
+                loadAppOpenAd();
+            }
+
+            @Override
+            public void onAdFailedToShowFullScreenContent(AdError adError) {
+                isShowingAppOpen = false;
+                appOpenAd = null;
+                loadAppOpenAd();
+            }
+        });
+        appOpenAd.show(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        wasInBackground = true;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (wasInBackground) {
+            wasInBackground = false;
+            if (skipNextAppOpen) {
+                // retour d'une pub rewarded/interstitielle, du sélecteur de photo ou du partage
+                skipNextAppOpen = false;
+            } else {
+                showAppOpenIfAllowed();
+            }
+        } else {
+            skipNextAppOpen = false;   // premier démarrage : pas de pub, les suivants oui
+        }
+    }
+
+    // ---------- Pont : publicités (rewarded + interstitiel + bannière + statut PRO) ----------
     public class AdBridge {
 
         @JavascriptInterface
         public void showRewardedAd(String purpose) {
             runOnUiThread(() -> {
                 if (rewardedAd != null) {
+                    skipNextAppOpen = true;
                     rewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                         @Override
                         public void onAdDismissedFullScreenContent() {
@@ -177,6 +280,7 @@ public class MainActivity extends AppCompatActivity {
         public void showInterstitial() {
             runOnUiThread(() -> {
                 if (interstitialAd != null) {
+                    skipNextAppOpen = true;
                     interstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                         @Override
                         public void onAdDismissedFullScreenContent() {
@@ -199,6 +303,22 @@ public class MainActivity extends AppCompatActivity {
         public void setBannerVisible(boolean visible) {
             runOnUiThread(() -> {
                 if (adView != null) adView.setVisibility(visible ? View.VISIBLE : View.GONE);
+            });
+        }
+
+        // 🛡️ Appelé par la page web : true = utilisateur PRO actif (aucune pub App Open)
+        @JavascriptInterface
+        public void setProStatus(boolean isPro) {
+            getSharedPreferences(PREFS_ADS, MODE_PRIVATE)
+                .edit()
+                .putBoolean("is_pro", isPro)
+                .apply();
+            runOnUiThread(() -> {
+                if (isPro) {
+                    appOpenAd = null;          // on jette toute pub déjà chargée
+                } else {
+                    loadAppOpenAd();
+                }
             });
         }
     }
@@ -240,6 +360,7 @@ public class MainActivity extends AppCompatActivity {
                 sendIntent.putExtra(Intent.EXTRA_SUBJECT, title);
                 sendIntent.putExtra(Intent.EXTRA_TEXT, text + "\n" + url);
                 Intent chooser = Intent.createChooser(sendIntent, "Pataje NS4 Support+");
+                skipNextAppOpen = true;   // le retour du menu de partage ne déclenche pas de pub
                 startActivity(chooser);
             });
         }
