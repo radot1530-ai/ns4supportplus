@@ -15,8 +15,8 @@
     // Pages où la bannière FREE s'affiche (nom de fichier sans .html)
     bannerPages: ["home", "quiz", "vocab", "fòmil", "exam", "milti", "defi", "ranking"],
 
-    free: { everyN: 2, minGapMs: 3 * 60 * 1000 },   // 1 interstitiel toutes les 2 activités, min 3 min d'écart
-    pro:  { everyN: 6, minGapMs: 12 * 60 * 1000 },  // PRO : rare (toutes les 6 activités, min 12 min)
+    free: { everyN: 2, minGapMs: 90 * 1000 },       // 1 interstitiel toutes les 2 "pauses", min 90s d'écart
+    pro:  { everyN: 6, minGapMs: 10 * 60 * 1000 },  // PRO : rare (toutes les 6 "pauses", min 10 min)
 
     // Nòt (vocab / fòmil / egzamen) : 1 pub regardée = accès pendant X minutes
     // 0 = une pub À CHAQUE ouverture de matière / chapitre / examen
@@ -85,8 +85,11 @@
     });
   }
   // Callbacks appelés par MainActivity.java
+  // ⚠️ Ne touche PAS au minuteur de l'interstitiel (s.lastInter) : un rewarded
+  // (pièces/déblocage nòt) et un interstitiel sont deux compteurs séparés,
+  // sinon tester l'un bloque l'autre pendant plusieurs minutes.
   global.onAdRewardEarned = function () {
-    const s = load(); s.fails = 0; s.last = Date.now(); save(s);
+    const s = load(); s.fails = 0; save(s);
     settle(true);
   };
   global.onAdNotReady = function () {
@@ -110,20 +113,22 @@
       const t0 = Date.now();
       interWait = function () {
         const shown = Date.now() - t0 > 600;   // fermé aussitôt = pas de pub dispo
-        if (shown) { const s = load(); s.last = Date.now(); save(s); }
+        if (shown) { const s = load(); s.lastInter = Date.now(); save(s); }
         resolve(shown);
       };
       try { global.AndroidAds.showInterstitial(); } catch (e) { interWait = null; resolve(false); }
     });
   }
-  // À appeler aux pauses naturelles (fin de leçon, de match, de défi...)
+  // À appeler aux pauses naturelles (fin de leçon, fin de match, fin de journée de défi,
+  // ouverture de la home...). Compteur "n" partagé entre toutes les pages : la 1re pause
+  // de la session affiche TOUJOURS une pub (utile pour tester), ensuite 1 pause sur N.
   function maybeInterstitial(/* reason */) {
     if (!inApp()) return;
     const tier = isPro() ? NS4_ADS_CFG.pro : NS4_ADS_CFG.free;
     const s = load();
     s.n = (s.n || 0) + 1; save(s);
-    if (s.n % tier.everyN !== 0) return;
-    if (Date.now() - (s.last || 0) < tier.minGapMs) return;
+    if (s.n !== 1 && (s.n - 1) % tier.everyN !== 0) return;
+    if (Date.now() - (s.lastInter || 0) < tier.minGapMs) return;
     setTimeout(showInterstitial, 800);
   }
 
