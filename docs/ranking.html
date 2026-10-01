@@ -271,5 +271,8 @@ if ('serviceWorker' in navigator) {
   }).catch(() => {});
 }
 </script>
+<script>
+window.addEventListener("load", () => { if (window.NS4Ads) NS4Ads.maybeInterstitial("ranking"); });
+</script>
 </body>
 </html>
