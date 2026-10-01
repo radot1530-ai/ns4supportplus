@@ -1,5 +1,7 @@
 package com.ns4.quiz;
 
+import android.os.Handler;
+import android.view.animation.AlphaAnimation;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
