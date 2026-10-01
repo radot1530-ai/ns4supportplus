@@ -741,5 +741,26 @@ if ('serviceWorker' in navigator) {
   }).catch(() => {});
 }
 </script>
+<script>
+function loadDailyExamWidget() {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const saved = JSON.parse(localStorage.getItem('ns4_daily_exam') || 'null');
+  if (saved && saved.date === todayKey) {
+    if (window.AndroidWidget) window.AndroidWidget.saveNote('exam', saved.title, saved.text);
+    return;
+  }
+  const ids = Object.keys(ALL_EXAMS);
+  if (!ids.length) return;
+  const pick = ALL_EXAMS[ids[Math.floor(Math.random() * ids.length)]];
+  if (!pick) return;
+  const data = {
+    date: todayKey,
+    title: pick.matiere + (pick.annee ? ' — ' + pick.annee : ''),
+    text: pick.session || 'Gade ansyen egzamen sa a pou pratike.'
+  };
+  localStorage.setItem('ns4_daily_exam', JSON.stringify(data));
+  if (window.AndroidWidget) window.AndroidWidget.saveNote('exam', data.title, data.text);
+}
+</script>
 </body>
 </html>
