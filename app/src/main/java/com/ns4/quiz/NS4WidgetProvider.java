@@ -9,35 +9,44 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.RemoteViews;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 public class NS4WidgetProvider extends AppWidgetProvider {
 
     public static final String PREFS_NAME = "ns4_widget_prefs";
 
+    // 🔵 Les 3 catégories possibles, dans un ordre de repli si aucune n'a de date (1re install)
+    private static final String[] CATEGORIES = { "vocab", "fomil", "exam" };
+
     static class NoteEntry {
         String category, tag, title, text;
-        NoteEntry(String c, String t, String ti, String te) { category = c; tag = t; title = ti; text = te; }
+        long ts;
+        NoteEntry(String c, String t, String ti, String te, long ts) {
+            category = c; tag = t; title = ti; text = te; this.ts = ts;
+        }
     }
 
+    private static final String[] TAGS = { "💡 Nòt Vokabilè", "📐 Fòmil", "📝 Egzamen" };
+
+    // 🔵 CORRIGÉ : on affiche la note la PLUS RÉCEMMENT consultée (par horodatage),
+    // pas une note au hasard — avant, saveNote() pouvait mettre à jour "vocab" et le
+    // widget avait quand même une chance d'afficher un vieux "fomil", ce qui donnait
+    // l'impression que le widget restait bloqué / ne suivait pas ce que l'élève lisait.
     private NoteEntry pickNote(SharedPreferences prefs) {
-        List<NoteEntry> candidates = new ArrayList<>();
-
-        String vTitle = prefs.getString("note_vocab_title", null);
-        if (vTitle != null) candidates.add(new NoteEntry("vocab", "💡 Nòt Vokabilè", vTitle, prefs.getString("note_vocab_text", "")));
-
-        String fTitle = prefs.getString("note_fomil_title", null);
-        if (fTitle != null) candidates.add(new NoteEntry("fomil", "📐 Fòmil", fTitle, prefs.getString("note_fomil_text", "")));
-
-        String eTitle = prefs.getString("note_exam_title", null);
-        if (eTitle != null) candidates.add(new NoteEntry("exam", "📝 Egzamen", eTitle, prefs.getString("note_exam_text", "")));
-
-        if (candidates.isEmpty()) {
-            return new NoteEntry("vocab", "💡 NS4 Support+", "Louvri app la", "Kòmanse aprann jodi a!");
+        NoteEntry best = null;
+        for (int i = 0; i < CATEGORIES.length; i++) {
+            String cat = CATEGORIES[i];
+            String title = prefs.getString("note_" + cat + "_title", null);
+            if (title == null) continue;
+            long ts = prefs.getLong("note_" + cat + "_ts", 0);
+            if (best == null || ts > best.ts) {
+                best = new NoteEntry(cat, TAGS[i], title, prefs.getString("note_" + cat + "_text", ""), ts);
+            }
         }
-        return candidates.get(new Random().nextInt(candidates.size()));
+        if (best == null) {
+            // Rien n'a encore été consulté dans l'app (1re install) : texte par défaut soigné
+            return new NoteEntry("vocab", "💡 NS4 Support+", "Byenveni!",
+                "Louvri yon leson pou wè yon nòt chak jou dirèkteman isit la.", 0);
+        }
+        return best;
     }
 
     private void updateOne(Context context, AppWidgetManager manager, int widgetId) {
@@ -66,7 +75,7 @@ public class NS4WidgetProvider extends AppWidgetProvider {
         for (int id : widgetIds) updateOne(context, manager, id);
     }
 
-    // Appelé par le pont JS pour forcer un rafraîchissement immédiat
+    // Appelé par le pont JS (MainActivity.WidgetBridge.saveNote) pour forcer un rafraîchissement immédiat
     public static void refreshAll(Context context) {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         ComponentName cn = new ComponentName(context, NS4WidgetProvider.class);
