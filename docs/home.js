@@ -93,6 +93,15 @@ function isProActive(u) {
     return !!u && u.status === "PRO" && !!u.proExpireAt && u.proExpireAt > serverNow();
 }
 
+// 🛡️ Voye stati PRO a bay Android (pou piblisite "App Open" yo pa parèt pou PRO)
+function syncProToAndroid(isPro) {
+    try {
+        if (window.AndroidAds && typeof AndroidAds.setProStatus === "function") {
+            AndroidAds.setProStatus(!!isPro);
+        }
+    } catch (e) { /* pa nan app Android la: inyore */ }
+}
+
 /*=========================================================
   3. AUTHENTICATION & OFFLINE CAPABILITY
 =========================================================*/
@@ -164,6 +173,7 @@ function checkProExpiry(u) {
 }
 
 function logout() {
+    syncProToAndroid(false);   // kont pwochen an sou telefòn nan pa dwe eritye stati PRO a
     if (userRef) userRef.off();
     if (localUser && localUser.uid) {
         db.ref(`users/${localUser.uid}`).update({ isConnected: false }).catch(() => {});
@@ -494,6 +504,7 @@ function updateDOMWithUserData(data) {
 
     // Stati PRO (pa gen okenn ekriti Firebase isit la ankò)
     const isPro = isProActive(data);
+    syncProToAndroid(isPro);   // 🛡️ Android sonje stati a: PRO pa janm wè piblisite "App Open"
     const statusEl = $("user-status");
     if (statusEl) {
         statusEl.innerText = isPro ? "PRO" : "FREE";
