@@ -68,9 +68,9 @@ public class MainActivity extends AppCompatActivity {
     private static final long SPLASH_MAX_MS = 6000;
 
     // ⚠️ IDs de TEST Google — remplace par tes vrais IDs une fois validé
-    private static final String REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917";
-    private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
-    private static final String APP_OPEN_AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921";
+    private static final String REWARDED_AD_UNIT_ID = "ca-app-pub-3844455306510823/9708276077";
+    private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3844455306510823/6865298344";
+    private static final String APP_OPEN_AD_UNIT_ID = "ca-app-pub-3844455306510823/5140484251";
 
     private static final long APP_OPEN_MAX_AGE_MS = 4 * 60 * 60 * 1000L;  // une pub chargée reste valide 4 h
     private static final long APP_OPEN_COOLDOWN_MS = 3 * 60 * 1000L;      // minimum 3 min entre deux App Open
