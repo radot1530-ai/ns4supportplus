@@ -15,7 +15,7 @@
     // Pages où la bannière FREE s'affiche (nom de fichier sans .html)
     bannerPages: ["home", "quiz", "vocab", "fòmil", "exam", "milti", "defi", "ranking"],
 
-    free: { everyN: 2, minGapMs: 90 * 1000 },       // 1 interstitiel toutes les 2 "pauses", min 90s d'écart
+    free: { everyN: 1, minGapMs: 45 * 1000 },       // 1 interstitiel toutes les 2 "pauses", min 90s d'écart
     pro:  { everyN: 6, minGapMs: 10 * 60 * 1000 },  // PRO : rare (toutes les 6 "pauses", min 10 min)
 
     // Nòt (vocab / fòmil / egzamen) : 1 pub regardée = accès pendant X minutes
