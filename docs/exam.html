@@ -673,6 +673,7 @@ function handleBack() {
     $("pageSub").innerText = "Ansyen egzamen ofisyèl";
     currentExamId = null;
     renderDash(); renderList();
+    if (window.NS4Ads) NS4Ads.maybeInterstitial('exam_exit');
   } else {
     window.location.href = "home.html";
   }
