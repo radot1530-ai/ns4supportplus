@@ -1,7 +1,5 @@
 package com.ns4.quiz;
 
-import android.os.Handler;
-import android.view.animation.AlphaAnimation;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -9,7 +7,11 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -18,6 +20,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -55,6 +58,15 @@ public class MainActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> fileChooserLauncher;
     private long lastBackPressTime = 0;
 
+    // ---------- Splash screen natif ----------
+    // 🔵 Le splash reste affiché PAR-DESSUS le WebView (qui charge en dessous dès le départ,
+    // donc on ne perd aucune seconde) jusqu'à ce que la page finisse de charger : minimum
+    // SPLASH_MIN_MS pour éviter un clignotement, maximum 6s de sécurité si la connexion est lente.
+    private View splashOverlay;
+    private long splashShownAt = 0;
+    private static final long SPLASH_MIN_MS = 1200;
+    private static final long SPLASH_MAX_MS = 6000;
+
     // ⚠️ IDs de TEST Google — remplace par tes vrais IDs une fois validé
     private static final String REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917";
     private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
@@ -67,7 +79,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);   // le WebView ci-dessous commence à charger tout de suite
+
+        showSplashOverlay();   // 🔵 affiché PAR-DESSUS pendant le chargement — rien d'autre ne change
 
         MobileAds.initialize(this, initializationStatus -> {});
 
@@ -125,6 +139,12 @@ public class MainActivity extends AppCompatActivity {
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                hideSplashOverlay();   // 🔵 la page est prête : on enlève le splash
+            }
+
+            @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 super.onReceivedError(view, request, error);
                 if (request.isForMainFrame()) {
@@ -134,6 +154,43 @@ public class MainActivity extends AppCompatActivity {
         });
 
         webView.loadUrl("https://radot1530-ai.github.io/ns4supportplus/");
+    }
+
+    // ---------- Splash screen : affichage / masquage ----------
+    private void showSplashOverlay() {
+        splashOverlay = getLayoutInflater().inflate(R.layout.splash_screen, null);
+        ViewGroup root = findViewById(android.R.id.content);
+        root.addView(splashOverlay, new ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        TextView splashCreator = splashOverlay.findViewById(R.id.splashCreator);
+        AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
+        fadeIn.setDuration(900);
+        fadeIn.setStartOffset(300);
+        fadeIn.setFillAfter(true);
+        splashCreator.startAnimation(fadeIn);
+
+        splashShownAt = System.currentTimeMillis();
+
+        // Filet de sécurité : si la page met trop de temps (connexion lente/hors ligne),
+        // on enlève quand même le splash pour ne jamais bloquer l'utilisateur dessus.
+        new Handler(Looper.getMainLooper()).postDelayed(this::hideSplashOverlay, SPLASH_MAX_MS);
+    }
+
+    private void hideSplashOverlay() {
+        if (splashOverlay == null) return;   // déjà caché (ou en train de l'être)
+        final View v = splashOverlay;
+        splashOverlay = null;   // empêche un double déclenchement (onPageFinished + filet de sécurité)
+
+        long elapsed = System.currentTimeMillis() - splashShownAt;
+        long remaining = Math.max(0, SPLASH_MIN_MS - elapsed);   // le splash reste au moins SPLASH_MIN_MS
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            v.animate().alpha(0f).setDuration(250).withEndAction(() -> {
+                ViewGroup root = findViewById(android.R.id.content);
+                root.removeView(v);
+            }).start();
+        }, remaining);
     }
 
     private void loadRewardedAd() {
