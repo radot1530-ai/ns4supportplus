@@ -390,6 +390,7 @@ public class MainActivity extends AppCompatActivity {
             prefs.edit()
                 .putString("note_" + category + "_title", title)
                 .putString("note_" + category + "_text", text)
+                .putLong("note_" + category + "_ts", System.currentTimeMillis())
                 .apply();
             NS4WidgetProvider.refreshAll(MainActivity.this);
         }
