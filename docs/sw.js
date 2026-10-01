@@ -25,7 +25,7 @@ const FILE_NAMES = [
   'quiz.html', 'quiz.js',
   'ranking.html', 'ranking.js',
   'stats.js',
-  'style.css',                  // Corrigé (style.css au lieu de tyle.css)
+  'tyle.css',                  // Corrigé (style.css au lieu de tyle.css)
   'vocab.html'
 ];
 
