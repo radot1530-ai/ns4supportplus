@@ -10,13 +10,23 @@ android {
         applicationId "com.ns4.quiz"
         minSdk 21
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 211
+        versionName "2.1.1"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("release.jks")
+            storePassword System.getenv("KEYSTOREPASSWORD")
+            keyAlias System.getenv("KEYALIAS")
+            keyPassword System.getenv("KEYPASSWORD")
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
         }
     }
 
