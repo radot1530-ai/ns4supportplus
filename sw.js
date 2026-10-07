@@ -143,4 +143,4 @@ self.addEventListener('fetch', (event) => {
       return new Response('Offline — done pa disponib.', { status: 503 });
     }
   })());
-});
+}); 
