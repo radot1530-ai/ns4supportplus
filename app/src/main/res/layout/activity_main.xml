@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Layout volontairement très léger : le splash s'affiche tout de suite,
+     le WebView et la bannière sont ajoutés juste après (content_main.xml) -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:background="#FFFFFF">
 
-    <WebView
-        android:id="@+id/webview"
+    <LinearLayout
+        android:id="@+id/mainContainer"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical" />
 
-    <com.google.android.gms.ads.AdView
-        xmlns:ads="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/adView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        ads:adSize="BANNER"
-        ads:adUnitId="ca-app-pub-3844455306510823/3870013075"/>
+    <include
+        android:id="@+id/splashOverlay"
+        layout="@layout/splash_screen" />
 
-</LinearLayout>
+</FrameLayout>
