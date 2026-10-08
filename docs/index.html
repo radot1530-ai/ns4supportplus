@@ -5,24 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="no-referrer">
   <title>NS4 Support+ | Akèy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <style>
     body {
       margin: 0; padding: 0; min-height: 100vh;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #24439a 0%, #1d3783 100%);
-      color: white; font-family: 'Baloo 2', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: #ffffff;
+      color: #24439a; font-family: 'Baloo 2', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
       overflow: hidden;
     }
 
     /* Splash Screen */
     #splash-screen {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      width: 100%; height: 100vh; position: absolute; z-index: 10;
+      width: 100%; height: 100vh; position: absolute; z-index: 10; background: #ffffff;
       transition: opacity 0.5s ease;
     }
     .logo { font-size: 42px; font-weight: 800; letter-spacing: 1px; animation: pulse 2s infinite; }
-    .spinner { margin-top: 20px; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
+    .spinner { margin-top: 20px; width: 40px; height: 40px; border: 4px solid rgba(36,67,154,0.2); border-top-color: #24439a; border-radius: 50%; animation: spin 1s linear infinite; }
 
     /* Onboarding Slider */
     #onboarding {
@@ -163,12 +163,9 @@
       btn.addEventListener("click", nextSlide);
 
       function showOnboarding() {
-        var splash = document.getElementById("splash-screen");
-        splash.style.opacity = "0";
-        setTimeout(function () {
-          splash.style.display = "none";
-          document.getElementById("onboarding").style.display = "flex";
-        }, 500);
+        document.getElementById("splash-screen").style.display = "none";
+        document.getElementById("onboarding").style.display = "flex";
+        try { if (window.AndroidSplash) window.AndroidSplash.hide(); } catch (e) {}
       }
 
       // ── Routing (fonksyone menm san entènèt: pa gen okenn depandans rezo)
@@ -187,10 +184,9 @@
         }
       }
 
-      setTimeout(route, 1500);
+      route();   // plus d'attente artificielle
     })();
   </script>
-<div id="debug-panel" style="position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font-size:10px;padding:8px;max-height:150px;overflow-y:auto;z-index:99999;font-family:monospace;"></div>
 
 <script>
 if ('serviceWorker' in navigator) {
