@@ -1,3 +1,5 @@
-<resources>
+resources>
     <string name="app_name">NS4 Support Plus +</string>
+    <string name="widget_label">NS4 Support+</string>
+    <string name="widget_description">Yon nòt (vokabilè, fòmil, egzamen) ki chanje chak 10 minit.</string>
 </resources>
