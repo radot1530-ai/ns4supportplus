@@ -11,7 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
+import android.view.ViewTreeObserver;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -20,15 +20,19 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.TextView;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
@@ -59,13 +63,21 @@ public class MainActivity extends AppCompatActivity {
     private long lastBackPressTime = 0;
 
     // ---------- Splash screen natif ----------
-    // 🔵 Le splash reste affiché PAR-DESSUS le WebView (qui charge en dessous dès le départ,
-    // donc on ne perd aucune seconde) jusqu'à ce que la page finisse de charger : minimum
-    // SPLASH_MIN_MS pour éviter un clignotement, maximum 6s de sécurité si la connexion est lente.
+    // Le splash (logo + "from Global Plis +∞") est dessiné dès la 1re image : le layout est minimal,
+    // le WebView / la bannière / les pubs sont initialisés APRÈS ce premier affichage.
+    // Il disparaît quand la vraie page (home, login...) est prête — pas la page d'entrée index.html
+    // qui redirige aussitôt. Minimum SPLASH_MIN_MS (pas de clignotement), maximum SPLASH_MAX_MS (sécurité).
     private View splashOverlay;
     private long splashShownAt = 0;
-    private static final long SPLASH_MIN_MS = 1200;
-    private static final long SPLASH_MAX_MS = 6000;
+    private static final long SPLASH_MIN_MS = 800;
+    private static final long SPLASH_MAX_MS = 3000;
+    private boolean prevLightStatusBar = false;
+    private int prevStatusBarColor = 0;
+    private int prevNavBarColor = 0;
+    private static final String START_URL = "https://radot1530-ai.github.io/ns4supportplus/";
+
+    private LinearLayout mainContainer;
+    private FrameLayout adContainer;
 
     // ⚠️ IDs de TEST Google — remplace par tes vrais IDs une fois validé
     private static final String REWARDED_AD_UNIT_ID = "ca-app-pub-3844455306510823/9708276077";
@@ -78,22 +90,30 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.Theme_NS4);   // thème "fond blanc" (le manifest l'applique déjà ; filet de sécurité)
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);   // le WebView ci-dessous commence à charger tout de suite
+        setContentView(R.layout.activity_main);   // très léger : juste le conteneur + le splash
 
-        showSplashOverlay();   // 🔵 affiché PAR-DESSUS pendant le chargement — rien d'autre ne change
+        mainContainer = findViewById(R.id.mainContainer);
+        showSplashOverlay();   // le splash est déjà là pour la 1re image
 
-        MobileAds.initialize(this, initializationStatus -> {});
+        // Tout le reste (WebView, pubs...) démarre APRÈS le premier affichage du splash
+        final View decor = getWindow().getDecorView();
+        decor.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                decor.getViewTreeObserver().removeOnPreDrawListener(this);
+                new Handler(Looper.getMainLooper()).post(MainActivity.this::initMain);
+                return true;
+            }
+        });
+    }
 
+    private void initMain() {
+        getLayoutInflater().inflate(R.layout.content_main, mainContainer, true);
         webView = findViewById(R.id.webview);
-        adView = findViewById(R.id.adView);
-
-        AdRequest adRequest = new AdRequest.Builder().build();
-        adView.loadAd(adRequest);
-
-        loadRewardedAd();
-        loadInterstitialAd();
-        loadAppOpenAd();
+        adContainer = findViewById(R.id.adContainer);
+        webView.setBackgroundColor(0xFFFFFFFF);
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -103,12 +123,13 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setUseWideViewPort(true);
 
-        // 🔵 Ponts JavaScript ↔ Android
+        // Ponts JavaScript ↔ Android
         webView.addJavascriptInterface(new AdBridge(), "AndroidAds");
         webView.addJavascriptInterface(new WidgetBridge(), "AndroidWidget");
         webView.addJavascriptInterface(new ShareBridge(), "AndroidShare");
+        webView.addJavascriptInterface(new SplashBridge(), "AndroidSplash");
 
-        // 🔵 Sélecteur de fichiers natif (photo de profil, etc.)
+        // Sélecteur de fichiers natif (photo de profil, etc.)
         fileChooserLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -141,7 +162,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                hideSplashOverlay();   // 🔵 la page est prête : on enlève le splash
+                // index.html redirige tout de suite vers home/login : on garde le splash jusque-là
+                // (ou jusqu'à AndroidSplash.hide() pour l'écran de bienvenue des nouveaux utilisateurs)
+                if (!isEntryPage(url)) hideSplashOverlay();
             }
 
             @Override
@@ -153,42 +176,73 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        webView.loadUrl("https://radot1530-ai.github.io/ns4supportplus/");
+        // 1) la page commence à charger tout de suite
+        webView.loadUrl(START_URL);
+
+        // 2) les pubs s'initialisent en arrière-plan, sans retarder l'affichage
+        initAdsAsync();
+
+        // 3) le widget continue de tourner même après un redémarrage du téléphone
+        NS4WidgetProvider.scheduleRotationIfNeeded(this);
+    }
+
+    private void initAdsAsync() {
+        new Thread(() -> MobileAds.initialize(MainActivity.this, status -> runOnUiThread(() -> {
+            if (isFinishing()) return;
+            adView = new AdView(MainActivity.this);
+            adView.setAdSize(AdSize.BANNER);
+            adView.setAdUnitId("ca-app-pub-3844455306510823/3870013075");
+            adContainer.addView(adView);
+            adView.loadAd(new AdRequest.Builder().build());
+            loadRewardedAd();
+            loadInterstitialAd();
+            loadAppOpenAd();
+        }))).start();
+    }
+
+    private boolean isEntryPage(String url) {
+        if (url == null) return false;
+        int cut = url.indexOf('?'); if (cut >= 0) url = url.substring(0, cut);
+        cut = url.indexOf('#');     if (cut >= 0) url = url.substring(0, cut);
+        return url.endsWith("/ns4supportplus/") || url.endsWith("/ns4supportplus") || url.endsWith("/index.html");
     }
 
     // ---------- Splash screen : affichage / masquage ----------
     private void showSplashOverlay() {
-        splashOverlay = getLayoutInflater().inflate(R.layout.splash_screen, null);
-        ViewGroup root = findViewById(android.R.id.content);
-        root.addView(splashOverlay, new ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        TextView splashCreator = splashOverlay.findViewById(R.id.splashCreator);
-        AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
-        fadeIn.setDuration(900);
-        fadeIn.setStartOffset(300);
-        fadeIn.setFillAfter(true);
-        splashCreator.startAnimation(fadeIn);
-
+        splashOverlay = findViewById(R.id.splashOverlay);
         splashShownAt = System.currentTimeMillis();
 
-        // Filet de sécurité : si la page met trop de temps (connexion lente/hors ligne),
-        // on enlève quand même le splash pour ne jamais bloquer l'utilisateur dessus.
+        // Barres système blanches pendant le splash (rendu plein écran comme l'image de référence)
+        WindowInsetsControllerCompat c = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        prevLightStatusBar = c.isAppearanceLightStatusBars();
+        prevStatusBarColor = getWindow().getStatusBarColor();
+        prevNavBarColor = getWindow().getNavigationBarColor();
+        getWindow().setStatusBarColor(0xFFFFFFFF);
+        getWindow().setNavigationBarColor(0xFFFFFFFF);
+        c.setAppearanceLightStatusBars(true);
+        if (Build.VERSION.SDK_INT >= 26) c.setAppearanceLightNavigationBars(true);
+
+        // Filet de sécurité : jamais bloqué sur le splash
         new Handler(Looper.getMainLooper()).postDelayed(this::hideSplashOverlay, SPLASH_MAX_MS);
     }
 
     private void hideSplashOverlay() {
         if (splashOverlay == null) return;   // déjà caché (ou en train de l'être)
         final View v = splashOverlay;
-        splashOverlay = null;   // empêche un double déclenchement (onPageFinished + filet de sécurité)
+        splashOverlay = null;   // empêche un double déclenchement
 
         long elapsed = System.currentTimeMillis() - splashShownAt;
-        long remaining = Math.max(0, SPLASH_MIN_MS - elapsed);   // le splash reste au moins SPLASH_MIN_MS
+        long remaining = Math.max(0, SPLASH_MIN_MS - elapsed);
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            v.animate().alpha(0f).setDuration(250).withEndAction(() -> {
-                ViewGroup root = findViewById(android.R.id.content);
-                root.removeView(v);
+            v.animate().alpha(0f).setDuration(200).withEndAction(() -> {
+                v.setVisibility(View.GONE);
+                // on rend aux barres système leur apparence d'origine
+                WindowInsetsControllerCompat c = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+                getWindow().setStatusBarColor(prevStatusBarColor);
+                getWindow().setNavigationBarColor(prevNavBarColor);
+                c.setAppearanceLightStatusBars(prevLightStatusBar);
+                if (Build.VERSION.SDK_INT >= 26) c.setAppearanceLightNavigationBars(false);
             }).start();
         }, remaining);
     }
@@ -361,7 +415,7 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void setBannerVisible(boolean visible) {
             runOnUiThread(() -> {
-                if (adView != null) adView.setVisibility(visible ? View.VISIBLE : View.GONE);
+                if (adContainer != null) adContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
             });
         }
 
@@ -386,13 +440,7 @@ public class MainActivity extends AppCompatActivity {
     public class WidgetBridge {
         @JavascriptInterface
         public void saveNote(String category, String title, String text) {
-            SharedPreferences prefs = getSharedPreferences(NS4WidgetProvider.PREFS_NAME, MODE_PRIVATE);
-            prefs.edit()
-                .putString("note_" + category + "_title", title)
-                .putString("note_" + category + "_text", text)
-                .putLong("note_" + category + "_ts", System.currentTimeMillis())
-                .apply();
-            NS4WidgetProvider.refreshAll(MainActivity.this);
+            NS4WidgetProvider.addNote(MainActivity.this, category, title, text);
         }
 
         @JavascriptInterface
@@ -407,6 +455,14 @@ public class MainActivity extends AppCompatActivity {
                         "if(window.showToast) showToast('Kenbe dwèt sou ekran akèy la, chwazi Widgets, jwenn NS4 Support+');", null);
                 }
             });
+        }
+    }
+
+    // ---------- Pont : splash (appelé par index.html quand l'écran de bienvenue est prêt) ----------
+    public class SplashBridge {
+        @JavascriptInterface
+        public void hide() {
+            runOnUiThread(MainActivity.this::hideSplashOverlay);
         }
     }
 
@@ -429,6 +485,7 @@ public class MainActivity extends AppCompatActivity {
     // ---------- Bouton retour : toujours vers home.html, double-appui pour quitter ----------
     @Override
     public void onBackPressed() {
+        if (webView == null) { finish(); return; }
         webView.evaluateJavascript(
             "(function(){ try { if (typeof window.onAndroidBackPressed === 'function') { return window.onAndroidBackPressed() ? 'true' : 'false'; } } catch(e){} return 'false'; })();",
             value -> {
@@ -453,13 +510,14 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Peze retou ankò pou kite app la", Toast.LENGTH_SHORT).show();
             }
         } else {
-            webView.loadUrl("https://radot1530-ai.github.io/ns4supportplus/home.html");
+            webView.loadUrl(START_URL + "home.html");
         }
     }
 
     @Override
     protected void onDestroy() {
         if (adView != null) adView.destroy();
+        if (webView != null) webView.destroy();
         super.onDestroy();
     }
 }
