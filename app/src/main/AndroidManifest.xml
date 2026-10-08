@@ -6,7 +6,7 @@
 
     <application
         android:label="NS4 Support Plus"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+        android:theme="@style/Theme.NS4"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round">
@@ -17,14 +17,19 @@
 
         <activity
             android:name="com.ns4.quiz.MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
+            android:theme="@style/Theme.NS4">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <receiver android:name=".NS4WidgetProvider" android:exported="true">
+        <receiver
+            android:name="com.ns4.quiz.NS4WidgetProvider"
+            android:label="@string/widget_label"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
             </intent-filter>
