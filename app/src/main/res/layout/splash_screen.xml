@@ -1,44 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Splash : fond blanc, logo vers 30 % de la hauteur, "from Global Plis +∞" en bas (comme l'image de référence) -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/splashRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="#FFFFFF"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:layout_height="0dp"
+        android:layout_weight="60">
 
         <ImageView
             android:id="@+id/splashLogo"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
             android:contentDescription="NS4 Support Plus"
             android:scaleType="fitCenter"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@drawable/splash_logo" />
+    </FrameLayout>
 
-        <TextView
-            android:id="@+id/splashAppName"
-            android:layout_width="wrap_content"
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="40">
+
+        <ImageView
+            android:id="@+id/splashBrand"
+            android:layout_width="165dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="NS4 Support Plus"
-            android:textColor="#24439A"
-            android:textSize="25sp"
-            android:textStyle="bold" />
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="48dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="from Global Plis +∞"
+            android:scaleType="fitCenter"
+            android:src="@drawable/splash_brand" />
+    </FrameLayout>
 
-        <TextView
-            android:id="@+id/splashCreator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:alpha="0.0"
-            android:text="Global Plis +∞ (Lazarre Patrice)"
-            android:textColor="#777777"
-            android:textSize="12sp" />
-
-    </LinearLayout>
-
-</FrameLayout>
+</LinearLayout>
