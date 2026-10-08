@@ -3,71 +3,62 @@
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@drawable/widget_background"
-    android:padding="16dp">
+    android:orientation="vertical"
+    android:padding="14dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/widget_tag"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:singleLine="true"
+            android:text="NS4 Support+"
             android:textColor="#FFC107"
             android:textSize="11sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.03"
-            android:text="💡 NS4 Support+"/>
+            android:textStyle="bold" />
 
         <ImageView
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:alpha="0.9"
-            android:src="@mipmap/ic_launcher"
-            android:contentDescription="NS4 Support+"/>
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:contentDescription="NS4 Support+"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_widget_logo" />
     </LinearLayout>
 
     <View
         android:layout_width="28dp"
         android:layout_height="2dp"
-        android:layout_marginTop="8dp"
-        android:background="#FFC107"/>
+        android:layout_marginTop="6dp"
+        android:background="#FFC107" />
 
     <TextView
         android:id="@+id/widget_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:maxLines="2"
+        android:layout_marginTop="6dp"
         android:ellipsize="end"
-        android:lineSpacingExtra="1dp"/>
+        android:maxLines="2"
+        android:text="Byenveni!"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/widget_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textColor="#D7DEF2"
-        android:textSize="12.5sp"
-        android:maxLines="3"
+        android:layout_marginTop="3dp"
         android:ellipsize="end"
-        android:lineSpacingExtra="1dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:textColor="#FFC107"
-        android:textSize="10.5sp"
-        android:textStyle="bold"
-        android:text="Touche pou kontinye →"/>
+        android:maxLines="3"
+        android:text="Louvri yon leson pou wè yon nòt isit la."
+        android:textColor="#D7DEF2"
+        android:textSize="12sp" />
 
 </LinearLayout>
