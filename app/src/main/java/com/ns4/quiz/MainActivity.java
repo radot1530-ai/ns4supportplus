@@ -92,6 +92,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.Theme_NS4);   // thème "fond blanc" (le manifest l'applique déjà ; filet de sécurité)
         super.onCreate(savedInstanceState);
+
+        // Sélecteur de fichiers natif : DOIT être enregistré ici (avant STARTED), sinon crash
+        fileChooserLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (filePathCallback == null) return;
+                Uri[] results = null;
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri data = result.getData().getData();
+                    if (data != null) results = new Uri[]{data};
+                }
+                filePathCallback.onReceiveValue(results);
+                filePathCallback = null;
+            }
+        );
+
         setContentView(R.layout.activity_main);   // très léger : juste le conteneur + le splash
 
         mainContainer = findViewById(R.id.mainContainer);
@@ -128,21 +144,6 @@ public class MainActivity extends AppCompatActivity {
         webView.addJavascriptInterface(new WidgetBridge(), "AndroidWidget");
         webView.addJavascriptInterface(new ShareBridge(), "AndroidShare");
         webView.addJavascriptInterface(new SplashBridge(), "AndroidSplash");
-
-        // Sélecteur de fichiers natif (photo de profil, etc.)
-        fileChooserLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (filePathCallback == null) return;
-                Uri[] results = null;
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    Uri data = result.getData().getData();
-                    if (data != null) results = new Uri[]{data};
-                }
-                filePathCallback.onReceiveValue(results);
-                filePathCallback = null;
-            }
-        );
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
