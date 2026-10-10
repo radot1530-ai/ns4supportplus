@@ -32,7 +32,7 @@
             android:src="@drawable/ic_widget_logo" />
     </LinearLayout>
 
-    <View
+    <FrameLayout
         android:layout_width="28dp"
         android:layout_height="2dp"
         android:layout_marginTop="6dp"
